@@ -5,7 +5,7 @@ import type {GameState,GameAction, PlayerId,CardId} from "@ladder-duel/shared"
 function reduceFn(state:GameState,action:GameAction){
     return reduce(state,action)
 }
-function GamePage(){
+export function GamePage(){
     const initState=useMemo(()=>{
         return createInitalState();
     },[]);
@@ -62,9 +62,21 @@ interface LogPanelProps{
     log: string[]
 }
 
-function LogPanel({}:LogPanelProps){
+function LogPanel({log}:LogPanelProps){
 // HW 15: DDL 2/3(Tuesday) 17:00
 // including H1 Title
+return(
+    <>
+    <h1 className="LogPanel">Log Panel</h1>
+    <div className="LogPanel">
+        {log.length!==0&&
+            log.map((msg)=>{
+                return <div id={msg}>{msg}</div>
+            })
+        }
+    </div>
+    </>
+)
 // Div (scrollable):website search
 // each log(string) be wrapped as Div tag
 }
