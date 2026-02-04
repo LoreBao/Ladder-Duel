@@ -10,7 +10,20 @@ export function GamePage(){
         return createInitalState();
     },[]);
     const [state,dispatch]=useReducer(reduceFn,initState)
-    state.currentPlayer
+    const currentplayer=state.currentPlayer
+    const can=useMemo(()=>{
+        const hasWinner:Boolean=state.winner!=undefined
+        return{
+            // Key :Action, Value: Boolean
+            PLAY_CARD: !hasWinner&&state.phase==="ACTION",
+            SKIP_CARD: !hasWinner&&state.phase==="ACTION",
+            ROLL_DICE: !hasWinner&&state.phase==="ROLL",
+            RESOLVE_ROLL: !hasWinner&&state.phase==="RESOLVE",
+            DRAW_CARD: !hasWinner&&state.phase==="DRAW",
+            END_TURN: !hasWinner&&state.phase==="END",
+            RESET: true
+        }
+    },[state])
     return(
         <>
         <button>Picker Button</button>
@@ -19,15 +32,11 @@ export function GamePage(){
 
         <CardPanel player="P1" hands={state.players.P1.hand}/>
         <CardPanel player="P2" hands={state.players.P2.hand}/>
+        <OperatePanel can={can} />
+        <LogPanel log={state.log}/>
 
-        <div className="operationBtns">
-            <h1>Operation Buttons</h1>
-        </div>
-
-        <div className="log">
-            <h1>Log Panel</h1>
-        </div>
         </>
+
     )
 }
 
@@ -68,10 +77,10 @@ function LogPanel({log}:LogPanelProps){
 return(
     <>
     <h1 className="LogPanel">Log Panel</h1>
-    <div className="LogPanel">
+    <div className="LogPanel-Content">
         {log.length!==0&&
-            log.map((msg)=>{
-                return <div id={msg}>{msg}</div>
+            log.map((msg,index)=>{
+                return <div id={`${msg}-${index}`}>{msg}</div>
             })
         }
     </div>
@@ -82,11 +91,40 @@ return(
 }
 
 interface OperatePanelProps{
-    can:Object
+    can:Record<GameAction["type"],boolean>
+    executeDispatch: (action:GameAction["type"])=>{}
 }
 
-function OperatePanel(){
-
+function OperatePanel({can,executeDispatch}:OperatePanelProps){
+    return(
+        <>
+        <button 
+            disabled={!can.SKIP_CARD}
+            onClick={()=>executeDispatch("SKIP_CARD")}>
+                Skip
+        </button>
+        <button 
+            disabled={!can.ROLL_DICE}  
+            onClick={()=>executeDispatch("ROLL_DICE")}>Roll
+        </button>
+        <button 
+            disabled={!can.RESOLVE_ROLL}
+            onClick={()=>executeDispatch("RESOLVE_ROLL")}>Resolve
+        </button>
+        <button 
+            disabled={!can.DRAW_CARD}
+            onClick={()=>executeDispatch("DRAW_CARD")}>Draw
+        </button>
+        <button 
+            disabled={!can.END_TURN}
+            onClick={()=>executeDispatch("END_TURN")}>End
+        </button>
+        <button 
+            disabled={!can.RESET}
+            onClick={()=>executeDispatch("RESET")}>Reset
+        </button>
+        </>
+    )
 }
 
 

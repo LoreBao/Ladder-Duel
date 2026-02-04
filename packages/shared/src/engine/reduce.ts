@@ -4,6 +4,22 @@ import { createInitalState } from "./init";
 import { appendLog,clampPosition,getOpponent } from "./utils";
 import type { GameAction, GameState } from "../types";
 
+export function allow(phase:GameState["phase"]):GameAction["type"][]{
+    /*Allow Actions Based on Current Phase*/
+    switch (phase){
+        case "ACTION":
+            return ["PLAY_CARD","SKIP_CARD","RESET"];
+        case "ROLL":
+            return ["ROLL_DICE","RESET"]
+        case "RESOLVE":
+            return ["RESOLVE_ROLL","RESET"]
+        case "DRAW":
+            return ["DRAW_CARD","RESET"]
+        case "END":
+            return ["END_TURN", "RESET"]
+    }
+}
+
 export function reduce(
     state: GameState,
     action: GameAction,

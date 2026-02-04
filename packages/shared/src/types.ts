@@ -1,5 +1,5 @@
 export type PlayerId = "P1" | "P2";
-export type Phase = "Action"|"ROLL"|"RESOLVE"|"DRAW"|"END";
+export type Phase = "ACTION"|"ROLL"|"RESOLVE"|"DRAW"|"END";
 export type CardId = "REVERSE"|"MULTIPLER"|"ESCAPE"|"NEG_NEG_POS"
 export interface PlayerState{
     id:PlayerId
