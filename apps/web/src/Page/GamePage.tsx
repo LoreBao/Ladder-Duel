@@ -1,10 +1,14 @@
-import React ,{ startTransition, StaticLifecycle, use, useMemo, useReducer } from "react";
+import React ,{ startTransition, StaticLifecycle, use, useMemo, useReducer, useState } from "react";
 import {createInitalState, reduce} from "@ladder-duel/shared"
 import type {GameState,GameAction, PlayerId,CardId} from "@ladder-duel/shared"
 
 function reduceFn(state:GameState,action:GameAction){
     return reduce(state,action)
 }
+/* HW 16 Color Picker Typing*/
+type PlayerColor = "red" | "blue" 
+const COLOR_OPTIONS : PlayerColor[] = ["red" , "blue"]
+
 export function GamePage(){
     const initState=useMemo(()=>{
         return createInitalState();
@@ -24,6 +28,22 @@ export function GamePage(){
             RESET: true
         }
     },[state])
+
+    // HW16 - Color Picker
+    const [playerColor, setPlayerColor]= useState<Record<PlayerId,PlayerColor>>(
+        {
+            P1:"blue",
+            P2:"red"
+        }
+    )
+    // HW16 TODO: Complete Interface function Here
+    function onChange(){
+        // TODO
+    }
+    function onClose(){
+        // TODO
+    }
+
     return(
         <>
         <button>Picker Button</button>
@@ -40,11 +60,52 @@ export function GamePage(){
     )
 }
 
-interface CharacterPickerProps{
-    //TO-DO
+interface CharacterPickerProps {
+  open: boolean;                                                //控制「彈窗要不要出現」
+  value: Record<PlayerId, PlayerColor>;                         //提供「目前 P1 / P2 各自選到什麼顏色」的狀態給 CharacterPicker 顯示                          
+  onChange: (player: PlayerId, color: PlayerColor) => void;     // 當使用者在 picker 裡「選某個 player 的顏色」時，通知外部（GamePage）去更新 UI state
+  onClose: () => void;                                          //通知外部關閉彈窗                                        
 }
-function CharacterPicker(){
-    //TO-DO
+function CharacterPicker(cProps:CharacterPickerProps){
+    //HW16 - TO-DO
+    // Render Color Picker Pannel
+    const [colorState,setColorState]=React.useState([])
+    // UI : 
+    return(
+        <>
+        <div id="p1">
+        <h1>
+            P1 Color Picker
+        </h1>
+        <button onClick={changeColor}>
+
+        </button>
+        </div>
+
+        <div id="p2">
+        <h1>
+            P1 Color Picker
+        </h1>
+        <button onClick={changeColor}>
+
+        </button>
+        </div>
+        </>
+    )
+
+function changeColor(){
+    console.log("Color has Changed!")
+}
+        // header 1 
+        // P1 : Picker Div
+            // Color Btns
+        // P2 : Picker Div
+            // Color Btns
+        // Closed Btn
+    // Minimun Completion Requirement
+    // 1. Can Render the whole Componet
+    // 2. At least can Change playerColor state (Console)
+    // Hint: useEffect, EventListener, Father/Chilren Component Communication (ref: HW10)
 }
 
 interface CardPanelProps{
