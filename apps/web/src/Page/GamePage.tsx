@@ -37,11 +37,40 @@ export function GamePage(){
         }
     )
     // HW16 TODO: Complete Interface function Here
-    function onChange(){
+    function onChange(player: PlayerId, color: PlayerColor){
         // TODO
+        // Change Color Using SetPlayerColor (State) from given variable "Player"
+        // Base on Player change corresponding color
+        const nPlayerColor=playerColor
+        nPlayerColor[player]=color
+        setPlayerColor(nPlayerColor)
     }
-    function onClose(){
-        // TODO
+    // function onClose(){
+        
+    // }
+    function executeDispatchFn(actionType:GameAction["type"]){
+        if(actionType==="PLAY_CARD"||actionType==="SKIP_CARD"||actionType==="ROLL_DICE"){
+            if(actionType==="PLAY_CARD"){
+                dispatch({
+                    type:actionType,
+                    player:currentplayer,
+                    card:"MULTIPLER"
+                })
+            }
+            else{
+                dispatch({
+                    type:actionType,
+                    player:currentplayer
+                })
+            }
+        }
+        else if(actionType==="RESOLVE_ROLL"||actionType==="DRAW_CARD"||actionType==="END_TURN"||actionType==="RESET"){
+            dispatch({
+                type:actionType
+            })
+        }
+        return
+
     }
 
     return(
@@ -52,7 +81,7 @@ export function GamePage(){
 
         <CardPanel player="P1" hands={state.players.P1.hand}/>
         <CardPanel player="P2" hands={state.players.P2.hand}/>
-        <OperatePanel can={can} />
+        <OperatePanel can={can} executeDispatch={executeDispatchFn} />
         <LogPanel log={state.log}/>
 
         </>
@@ -66,36 +95,72 @@ interface CharacterPickerProps {
   onChange: (player: PlayerId, color: PlayerColor) => void;     // 當使用者在 picker 裡「選某個 player 的顏色」時，通知外部（GamePage）去更新 UI state
   onClose: () => void;                                          //通知外部關閉彈窗                                        
 }
-function CharacterPicker(cProps:CharacterPickerProps){
+function CharacterPicker({open,value,onChange,onClose}:CharacterPickerProps){
     //HW16 - TO-DO
     // Render Color Picker Pannel
-    const [colorState,setColorState]=React.useState([])
-    // UI : 
+    changeColor()
+    if(!open){
+        return;
+    }
+    
     return(
         <>
         <div id="p1">
-        <h1>
-            P1 Color Picker
-        </h1>
-        <button onClick={changeColor}>
+            <h1>
+                P1 Color Picker
+            </h1>
+            <div id="ColorsP1">
+                /**
 
-        </button>
+                 - create button with color text (no CSS), 
+                 - use COLOROPTIONS from above
+                 - When button is clicked, call onChange from Character Props, need player id and color as variable
+                 - call ChangeColor (Written previously) and say "Color has Change to $YOUR CHANGED COLOR$
+
+                **/
+                {/* Render many color Btns => suggest to use .map*/}
+                {COLOR_OPTIONS.map((color)=>{
+                    return(
+                    <button id={color}>{color}</button>
+                    )
+                })}
+                {/* Each Rendered btns should like:
+                    {/* button->for blue. click this button, button call onChange(P1,"blue") */}
+
+                    <button 
+                    onClick={
+                        ()=>{
+                        onChange("P1","red")
+                        changeColor();
+                        }
+                    }
+                    >red</button>
+                 */
+            </div>
+
         </div>
 
         <div id="p2">
         <h1>
             P1 Color Picker
         </h1>
+        <div id="ColorsP2">
+            /**
+                
+                 - create button with color text (no CSS), 
+                 - use COLOROPTIONS from above
+                 - When button is clicked, call onChange from Character Props, need player id and color as variable
+                 - call ChangeColor (Written previously) and say "Color has Change to $YOUR CHANGED COLOR$
+
+            **/
+        </div>
         <button onClick={changeColor}>
 
         </button>
         </div>
         </>
+        
     )
-
-function changeColor(){
-    console.log("Color has Changed!")
-}
         // header 1 
         // P1 : Picker Div
             // Color Btns
@@ -106,6 +171,10 @@ function changeColor(){
     // 1. Can Render the whole Componet
     // 2. At least can Change playerColor state (Console)
     // Hint: useEffect, EventListener, Father/Chilren Component Communication (ref: HW10)
+}
+
+function changeColor(){
+    console.log("Color has Changed!")
 }
 
 interface CardPanelProps{
@@ -153,7 +222,7 @@ return(
 
 interface OperatePanelProps{
     can:Record<GameAction["type"],boolean>
-    executeDispatch: (action:GameAction["type"])=>{}
+    executeDispatch: (action:GameAction["type"])=>void
 }
 
 function OperatePanel({can,executeDispatch}:OperatePanelProps){

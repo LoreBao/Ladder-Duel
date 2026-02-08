@@ -100,7 +100,7 @@ export function reduce(
         case "END_TURN":{
             let newState=state;
             newState.turn+=1;
-            newState.phase="Action"
+            newState.phase="ACTION"
             newState.currentPlayer=getOpponent(newState.currentPlayer);
             newState.lastroll=undefined;
             return appendLog(newState, `End of Turn, Changing Player ${newState.currentPlayer}`);

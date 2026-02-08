@@ -14,7 +14,7 @@ export function createInitalState():GameState{
     return{
         turn:0,
         currentPlayer:"P1",
-        phase:"Action",
+        phase:"ACTION",
         deck:initDeck,
         discard:[],
         players:{
