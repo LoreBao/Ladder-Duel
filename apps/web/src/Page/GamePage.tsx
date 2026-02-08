@@ -153,10 +153,25 @@ function CharacterPicker({open,value,onChange,onClose}:CharacterPickerProps){
                  - call ChangeColor (Written previously) and say "Color has Change to $YOUR CHANGED COLOR$
 
             **/
-        </div>
-        <button onClick={changeColor}>
 
-        </button>
+                {COLOR_OPTIONS.map((color)=>{
+                    return(
+                    <button id={color}>{color}</button>
+                    )
+                })}
+                {/* Each Rendered btns should like:
+                    {/* button->for blue. click this button, button call onChange(P1,"blue") */}
+
+                    <button 
+                    onClick={
+                        ()=>{
+                        onChange("P2","blue")
+                        changeColor();
+                        }
+                    }
+                    >blue</button>
+                 */
+        </div>
         </div>
         </>
         
