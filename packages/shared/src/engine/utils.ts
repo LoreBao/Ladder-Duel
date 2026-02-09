@@ -20,7 +20,7 @@ export function clampPosition(pos:number):number{
 }
 
 export function appendLog(state:GameState,message:string):GameState{
-    const newState=state;
+    const newState={...state};
     const messageTemplate=`[${state.turn}][${state.currentPlayer}][${state.phase}] ${message}`
     newState.log.push(messageTemplate);
     return newState;

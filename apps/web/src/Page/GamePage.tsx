@@ -30,6 +30,7 @@ export function GamePage(){
     },[state])
 
     // HW16 - Color Picker
+    const [colorPickerState,setColorPickerState]= useState<boolean>(false)
     const [playerColor, setPlayerColor]= useState<Record<PlayerId,PlayerColor>>(
         {
             P1:"blue",
@@ -75,9 +76,20 @@ export function GamePage(){
 
     return(
         <>
-        <button>Picker Button</button>
+        <button onClick={()=>{
+            setColorPickerState(!colorPickerState);
+            }
+        }>Picker Button</button>
+        <CharacterPicker open={colorPickerState} value={playerColor} onChange={onChange} onClose={()=>{
+            setColorPickerState(!colorPickerState)
+        }}/>
         <div className="Gallery">Gallery</div>
-        <p>Turn</p>
+        <p>Turn {state.turn}-{state.currentPlayer}</p>
+        <p>P1 Position: {state.players.P1.position}</p>
+        <p>P2 Position: {state.players.P2.position}</p>
+        <p>Current Roll: {state.lastroll?state.lastroll.value:""}</p>
+
+
 
         <CardPanel player="P1" hands={state.players.P1.hand}/>
         <CardPanel player="P2" hands={state.players.P2.hand}/>
@@ -110,32 +122,26 @@ function CharacterPicker({open,value,onChange,onClose}:CharacterPickerProps){
                 P1 Color Picker
             </h1>
             <div id="ColorsP1">
-                /**
 
-                 - create button with color text (no CSS), 
-                 - use COLOROPTIONS from above
-                 - When button is clicked, call onChange from Character Props, need player id and color as variable
-                 - call ChangeColor (Written previously) and say "Color has Change to $YOUR CHANGED COLOR$
-
-                **/
                 {/* Render many color Btns => suggest to use .map*/}
                 {COLOR_OPTIONS.map((color)=>{
                     return(
-                    <button id={color}>{color}</button>
+                    <button 
+                        id={color}
+                        onClick={
+                            ()=>{
+                                onChange("P1",color)
+                                changeColor();
+                            }
+                        }>{color}</button>
                     )
                 })}
                 {/* Each Rendered btns should like:
                     {/* button->for blue. click this button, button call onChange(P1,"blue") */}
 
                     <button 
-                    onClick={
-                        ()=>{
-                        onChange("P1","red")
-                        changeColor();
-                        }
-                    }
                     >red</button>
-                 */
+                
             </div>
 
         </div>
@@ -145,18 +151,18 @@ function CharacterPicker({open,value,onChange,onClose}:CharacterPickerProps){
             P1 Color Picker
         </h1>
         <div id="ColorsP2">
-            /**
-                
-                 - create button with color text (no CSS), 
-                 - use COLOROPTIONS from above
-                 - When button is clicked, call onChange from Character Props, need player id and color as variable
-                 - call ChangeColor (Written previously) and say "Color has Change to $YOUR CHANGED COLOR$
-
-            **/
 
                 {COLOR_OPTIONS.map((color)=>{
                     return(
-                    <button id={color}>{color}</button>
+                    <button 
+                        id={color}
+                        onClick={
+                            ()=>{
+                            onChange("P2",color)
+                            changeColor();
+                            }
+                        }   
+                        >{color}</button>
                     )
                 })}
                 {/* Each Rendered btns should like:
@@ -170,7 +176,7 @@ function CharacterPicker({open,value,onChange,onClose}:CharacterPickerProps){
                         }
                     }
                     >blue</button>
-                 */
+                 
         </div>
         </div>
         </>

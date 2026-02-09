@@ -42,14 +42,14 @@ export function reduce(
         }
 
         case "SKIP_CARD":{
-            let newState=state;
+            let newState={...state};
             newState.phase="ROLL";
             return appendLog(newState,"Skip Card");
         }
 
         case "ROLL_DICE":{
             const diceValue=deps.rollDice();
-            let newState=state;
+            let newState={...state};
             newState.lastroll={
                 roller:state.currentPlayer,
                 value:diceValue
@@ -60,7 +60,7 @@ export function reduce(
 
         case "RESOLVE_ROLL":{
             if(!state.lastroll){
-                let newState=state;
+                let newState={...state};
                 newState.phase="DRAW"
                 return appendLog(newState, "Error: Without Essential Last Roll");
             }
@@ -69,7 +69,7 @@ export function reduce(
             const delta=-state.lastroll.value
             
             const newPosition=clampPosition(state.players[target].position+delta)
-            let newState=state;
+            let newState={...state};
             newState.players[target].position=newPosition;
             newState.phase="DRAW"
             newState=appendLog(newState, `${target}->${newPosition}`)
@@ -83,12 +83,12 @@ export function reduce(
 
         case "DRAW_CARD":{
             if(state.deck.length===0){
-                let newState=state;
+                let newState={...state};
                 newState.phase="END"
                 return appendLog(newState, "End Turn")
             }
             const drawCard=state.deck.pop()  
-            let newState=state;
+            let newState={...state};
             if(drawCard!==undefined){
                  newState.players[state.currentPlayer].hand = [...newState.players[state.currentPlayer].hand, drawCard]
             }
@@ -98,7 +98,7 @@ export function reduce(
         }
 
         case "END_TURN":{
-            let newState=state;
+            let newState={...state};
             newState.turn+=1;
             newState.phase="ACTION"
             newState.currentPlayer=getOpponent(newState.currentPlayer);
