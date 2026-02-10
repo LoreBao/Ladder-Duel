@@ -280,3 +280,35 @@ function OperatePanel({can,executeDispatch}:OperatePanelProps){
 
 
 
+function Gallery(){
+    return (
+   
+    )
+}
+
+function canvasPatient(){
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // 1. Clear Canvas
+    // 2. Draw Circle, Square, Triangle
+    ctx.beginPath();
+    ctx.arc(30, 60, 3, 4, 5);
+    ctx.fill();
+
+    ctx.fillStyle = "#2196F3";
+    ctx.fillRect(140, 50, 60, 60);
+
+    ctx.beginPath();
+    ctx.moveTo(260,110);
+    ctx.lineTo(230,50);
+    ctx.lineTo(290,50);
+    ctx.closePath();
+    ctx.fillStyle = "#FF5722";
+    ctx.fill();
+    // 3. Write Text (or Draw) "120"
+
+    ctx.font = "20px Arial";
+    ctx.fillText("120", 50, 50);
+
+}

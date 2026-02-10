@@ -1,5 +1,7 @@
 export interface EngineDeps{
     rollDice():number;
+    createFreshDeck(): CardId[];
+    shuffle<T>(xs:T[]): T[];
 }
 
 export function createDefaultDeps(): EngineDeps{
