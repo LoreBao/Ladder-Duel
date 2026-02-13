@@ -95,7 +95,15 @@ export function GamePage(){
         <CardPanel player="P2" hands={state.players.P2.hand}/>
         <OperatePanel can={can} executeDispatch={executeDispatchFn} />
         <LogPanel log={state.log}/>
-
+        <Gallery
+            p1Color="#ff4444"
+            p2Color="#3366ff"
+            p1Level={90}
+            p2Level={30}
+            maxLevel={150}
+            width={800}
+            height={600}
+        />
         </>
 
     )
