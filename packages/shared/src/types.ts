@@ -78,6 +78,7 @@ export interface GameState{
         value:number
     }
     log:string[]
+    turnCtx:TurnContext;
     winner?:PlayerId
 }
 

@@ -1,4 +1,4 @@
-import React ,{ startTransition, StaticLifecycle, use, useMemo, useReducer, useState } from "react";
+import React ,{ startTransition, StaticLifecycle, use, useMemo, useReducer, useState, useRef, useEffect } from "react";
 import {createInitalState, reduce} from "@ladder-duel/shared"
 import type {GameState,GameAction, PlayerId,CardId} from "@ladder-duel/shared"
 
@@ -278,11 +278,42 @@ function OperatePanel({can,executeDispatch}:OperatePanelProps){
     )
 }
 
+type GalleryProps={
 
+    p1Color: string;
+    p2Color: string;
+    p1Level: number;
+    p2Level: number;
+    maxLevel?: number;
+    width?:number;
+    height?: number;
 
-function Gallery(){
-    return (
-   
+}
+
+function Gallery({
+    p1Color,
+    p2Color,
+    p1Level,
+    p2Level,
+    maxLevel=120,
+    width=600,
+    height=600,
+}: GalleryProps){
+    const canvasRef=useRef<HTMLCanvasElement|null>(null);
+    useEffect(()=>{
+        // use Canvas to paint
+        // HW 17 
+        // Limitation:
+        // 1. only providing Component of Gallery source code
+        // 2. only modified code in the callback of useEffect
+        // Styling Limiation
+        // 1. must containing: P1/P2 text, level, color
+
+    },[p1Color,p2Color,p1Level,p2Level,maxLevel,width,height])
+    return(
+        <div>
+            <canvas ref={canvasRef}></canvas> /**Canvas Ref. Current */
+        </div>
     )
 }
 
@@ -291,6 +322,7 @@ function canvasPatient(){
     const ctx = canvas.getContext("2d");
 
     // 1. Clear Canvas
+    ctx.clearRect(0,0,300,300)
     // 2. Draw Circle, Square, Triangle
     ctx.beginPath();
     ctx.arc(30, 60, 3, 4, 5);
