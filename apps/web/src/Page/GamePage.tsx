@@ -1,5 +1,5 @@
 import React ,{ startTransition, StaticLifecycle, use, useMemo, useReducer, useState, useRef, useEffect } from "react";
-import {createInitalState, reduce} from "@ladder-duel/shared"
+import {createDefaultDeps, createInitalState, reduce} from "@ladder-duel/shared"
 import type {GameState,GameAction, PlayerId,CardId} from "@ladder-duel/shared"
 
 function reduceFn(state:GameState,action:GameAction){
@@ -11,7 +11,7 @@ const COLOR_OPTIONS : PlayerColor[] = ["red" , "blue"]
 
 export function GamePage(){
     const initState=useMemo(()=>{
-        return createInitalState();
+        return createInitalState(createDefaultDeps());
     },[]);
     const [state,dispatch]=useReducer(reduceFn,initState)
     const currentplayer=state.currentPlayer
@@ -96,11 +96,11 @@ export function GamePage(){
         <OperatePanel can={can} executeDispatch={executeDispatchFn} />
         <LogPanel log={state.log}/>
         <Gallery
-            p1Color="#ff4444"
-            p2Color="#3366ff"
-            p1Level={90}
-            p2Level={30}
-            maxLevel={150}
+            p1Color={playerColor.P1}
+            p2Color={playerColor.P2}
+            p1Level={state.players.P1.position}
+            p2Level={state.players.P2.position}
+            maxLevel={120}
             width={800}
             height={600}
         />
@@ -308,155 +308,155 @@ function Gallery({
     height=600,
 }: GalleryProps){
     const canvasRef=useRef<HTMLCanvasElement|null>(null);
-useEffect(() => {
-  const canvas = canvasRef.current;
-  if (!canvas) return;
+    useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-  // Ensure canvas size matches props
-  canvas.width = width;
-  canvas.height = height;
+    // Ensure canvas size matches props
+    canvas.width = width;
+    canvas.height = height;
+        
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+    // ---------- Helpers ----------
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
-  // ---------- Helpers ----------
-  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+    // map level -> y position (top = maxLevel, bottom = 0)
+    const levelToY = (level: number) => {
+        const padTop = 60;
+        const padBottom = 60;
+        const usableH = height - padTop - padBottom;
+        const t = clamp(level, 0, maxLevel) / maxLevel; // 0..1
+        // t=1 => near top, t=0 => near bottom
+        return padTop + (1 - t) * usableH;
+    };
 
-  // map level -> y position (top = maxLevel, bottom = 0)
-  const levelToY = (level: number) => {
-    const padTop = 60;
-    const padBottom = 60;
-    const usableH = height - padTop - padBottom;
-    const t = clamp(level, 0, maxLevel) / maxLevel; // 0..1
-    // t=1 => near top, t=0 => near bottom
-    return padTop + (1 - t) * usableH;
-  };
+    // ---------- Clear & background ----------
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
 
-  // ---------- Clear & background ----------
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
+    // ---------- Center "mountain rock" rectangle ----------
+    const rockW = Math.max(60, width * 0.14);
+    const rockH = Math.max(260, height * 0.62);
+    const rockX = (width - rockW) / 2;
+    const rockY = (height - rockH) / 2;
 
-  // ---------- Center "mountain rock" rectangle ----------
-  const rockW = Math.max(60, width * 0.14);
-  const rockH = Math.max(260, height * 0.62);
-  const rockX = (width - rockW) / 2;
-  const rockY = (height - rockH) / 2;
+    ctx.fillStyle = "#9aa0a6"; // rock color
+    ctx.fillRect(rockX, rockY, rockW, rockH);
 
-  ctx.fillStyle = "#9aa0a6"; // rock color
-  ctx.fillRect(rockX, rockY, rockW, rockH);
+    // rock outline
+    ctx.strokeStyle = "#6b7280";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(rockX, rockY, rockW, rockH);
 
-  // rock outline
-  ctx.strokeStyle = "#6b7280";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(rockX, rockY, rockW, rockH);
+    // ---------- P1 (left) ----------
+    const p1X = width * 0.22;
+    const p1Y = levelToY(p1Level);
 
-  // ---------- P1 (left) ----------
-  const p1X = width * 0.22;
-  const p1Y = levelToY(p1Level);
-
-  // P1 sphere
-  const r = 18;
-  ctx.beginPath();
-  ctx.fillStyle = p1Color || "red";
-  ctx.arc(p1X, p1Y, r, 0, Math.PI * 2);
-  ctx.fill();
-
-  // P1 label (text + level)
-  ctx.fillStyle = p1Color || "red";
-  ctx.font = "18px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "bottom";
-  ctx.fillText("P1", p1X, p1Y - r - 8);
-
-  ctx.font = "14px Arial";
-  ctx.textBaseline = "top";
-  ctx.fillText(`Lv ${p1Level}`, p1X, p1Y + r + 8);
-
-  // ---------- P2 (right) ----------
-  const p2X = width * 0.78;
-  const p2Y = levelToY(p2Level);
-
-  // P2 sphere
-  ctx.beginPath();
-  ctx.fillStyle = p2Color || "blue";
-  ctx.arc(p2X, p2Y, r, 0, Math.PI * 2);
-  ctx.fill();
-
-  // P2 label (text + level)
-  ctx.fillStyle = p2Color || "blue";
-  ctx.font = "18px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "bottom";
-  ctx.fillText("P2", p2X, p2Y - r - 8);
-
-  ctx.font = "14px Arial";
-  ctx.textBaseline = "top";
-  ctx.fillText(`Lv ${p2Level}`, p2X, p2Y + r + 8);
-
-  // ---------- Scale (maxLevel -> 0) ----------
-  const scaleX = width - 60;
-  const scaleTop = 60;
-  const scaleBottom = height - 60;
-
-  // scale line
-  ctx.strokeStyle = "#111827";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(scaleX, scaleTop);
-  ctx.lineTo(scaleX, scaleBottom);
-  ctx.stroke();
-
-  // ticks
-  const tickCount = 6; // includes top/bottom-ish ticks
-  ctx.font = "12px Arial";
-  ctx.fillStyle = "#111827";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-
-  for (let i = 0; i <= tickCount; i++) {
-    const t = i / tickCount; // 0..1 downward
-    const y = scaleTop + t * (scaleBottom - scaleTop);
-    const level = Math.round(maxLevel * (1 - t));
-
+    // P1 sphere
+    const r = 18;
     ctx.beginPath();
-    ctx.moveTo(scaleX - 8, y);
-    ctx.lineTo(scaleX + 8, y);
+    ctx.fillStyle = p1Color || "red";
+    ctx.arc(p1X, p1Y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // P1 label (text + level)
+    ctx.fillStyle = p1Color || "red";
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("P1", p1X, p1Y - r - 8);
+
+    ctx.font = "14px Arial";
+    ctx.textBaseline = "top";
+    ctx.fillText(`Lv ${p1Level}`, p1X, p1Y + r + 8);
+
+    // ---------- P2 (right) ----------
+    const p2X = width * 0.78;
+    const p2Y = levelToY(p2Level);
+
+    // P2 sphere
+    ctx.beginPath();
+    ctx.fillStyle = p2Color || "blue";
+    ctx.arc(p2X, p2Y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // P2 label (text + level)
+    ctx.fillStyle = p2Color || "blue";
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("P2", p2X, p2Y - r - 8);
+
+    ctx.font = "14px Arial";
+    ctx.textBaseline = "top";
+    ctx.fillText(`Lv ${p2Level}`, p2X, p2Y + r + 8);
+
+    // ---------- Scale (maxLevel -> 0) ----------
+    const scaleX = width - 60;
+    const scaleTop = 60;
+    const scaleBottom = height - 60;
+
+    // scale line
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(scaleX, scaleTop);
+    ctx.lineTo(scaleX, scaleBottom);
     ctx.stroke();
 
-    // label every other tick (less clutter)
-    if (i % 2 === 0) ctx.fillText(String(level), scaleX + 14, y);
-  }
+    // ticks
+    const tickCount = 6; // includes top/bottom-ish ticks
+    ctx.font = "12px Arial";
+    ctx.fillStyle = "#111827";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
 
-  // Explicit max & 0 labels (to satisfy requirement clearly)
-  ctx.font = "13px Arial";
-  ctx.fillText(String(maxLevel), scaleX + 14, scaleTop);
-  ctx.fillText("0", scaleX + 14, scaleBottom);
+    for (let i = 0; i <= tickCount; i++) {
+        const t = i / tickCount; // 0..1 downward
+        const y = scaleTop + t * (scaleBottom - scaleTop);
+        const level = Math.round(maxLevel * (1 - t));
 
-  // Mark P1 / P2 level positions on scale
-  const p1ScaleY = levelToY(p1Level);
-  const p2ScaleY = levelToY(p2Level);
+        ctx.beginPath();
+        ctx.moveTo(scaleX - 8, y);
+        ctx.lineTo(scaleX + 8, y);
+        ctx.stroke();
 
-  ctx.lineWidth = 3;
+        // label every other tick (less clutter)
+        if (i % 2 === 0) ctx.fillText(String(level), scaleX + 14, y);
+    }
 
-  // P1 marker
-  ctx.strokeStyle = p1Color || "red";
-  ctx.beginPath();
-  ctx.moveTo(scaleX - 14, p1ScaleY);
-  ctx.lineTo(scaleX + 14, p1ScaleY);
-  ctx.stroke();
-  ctx.fillStyle = p1Color || "red";
-  ctx.fillText("P1", scaleX - 40, p1ScaleY);
+    // Explicit max & 0 labels (to satisfy requirement clearly)
+    ctx.font = "13px Arial";
+    ctx.fillText(String(maxLevel), scaleX + 14, scaleTop);
+    ctx.fillText("0", scaleX + 14, scaleBottom);
 
-  // P2 marker
-  ctx.strokeStyle = p2Color || "blue";
-  ctx.beginPath();
-  ctx.moveTo(scaleX - 14, p2ScaleY);
-  ctx.lineTo(scaleX + 14, p2ScaleY);
-  ctx.stroke();
-  ctx.fillStyle = p2Color || "blue";
-  ctx.fillText("P2", scaleX - 40, p2ScaleY);
-}, [p1Color, p2Color, p1Level, p2Level, maxLevel, width, height]);
+    // Mark P1 / P2 level positions on scale
+    const p1ScaleY = levelToY(p1Level);
+    const p2ScaleY = levelToY(p2Level);
+
+    ctx.lineWidth = 3;
+
+    // P1 marker
+    ctx.strokeStyle = p1Color || "red";
+    ctx.beginPath();
+    ctx.moveTo(scaleX - 14, p1ScaleY);
+    ctx.lineTo(scaleX + 14, p1ScaleY);
+    ctx.stroke();
+    ctx.fillStyle = p1Color || "red";
+    ctx.fillText("P1", scaleX - 40, p1ScaleY);
+
+    // P2 marker
+    ctx.strokeStyle = p2Color || "blue";
+    ctx.beginPath();
+    ctx.moveTo(scaleX - 14, p2ScaleY);
+    ctx.lineTo(scaleX + 14, p2ScaleY);
+    ctx.stroke();
+    ctx.fillStyle = p2Color || "blue";
+    ctx.fillText("P2", scaleX - 40, p2ScaleY);
+    }, [p1Color, p2Color, p1Level, p2Level, maxLevel, width, height]);
 
     return(
         <div>
