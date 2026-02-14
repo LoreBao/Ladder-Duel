@@ -1,6 +1,19 @@
 import React ,{ startTransition, StaticLifecycle, use, useMemo, useReducer, useState, useRef, useEffect } from "react";
 import {createDefaultDeps, createInitalState, reduce} from "@ladder-duel/shared"
 import type {GameState,GameAction, PlayerId,CardId} from "@ladder-duel/shared"
+import "./GamePage.css"
+/* HW 18: Generate GamePage.css file
+Limitation:
+1. GamePage.tsx: Only allowed to modify "class" , "id" in each HTML tag 
+2. GamePage.css : allowed to modify by AI
+Requirements:
+1. Layout: HW14 (HackMD)
+2. Your style
+
+Another HW:
+1. Modify your gallery(canvas)
+DDL: 2/15 20:00 p.m.
+*/
 
 function reduceFn(state:GameState,action:GameAction){
     return reduce(state,action)

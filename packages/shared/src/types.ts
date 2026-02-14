@@ -1,6 +1,6 @@
 export type PlayerId = "P1" | "P2";
 export type Phase = "ACTION"|"ROLL"|"REACTION"|"RESOLVE"|"DRAW"|"END";
-export type CardId = "REVERSE"|"MULTIPLER"|"ESCAPE"|"NEG_NEG_POS"|"HALF_DAMAGE"|"SET_ROLL"|"NULLIFY"|"SELF_HEAL"
+export type CardId = "REVERSE"|"MULTIPLIER"|"ESCAPE"|"NEG_NEG_POS"|"HALF_DAMAGE"|"SET_ROLL"|"NULLIFY"|"SELF_HEAL"
 export type CardTiming = "ACTION"|"REACTION"|"BOTH";
 
 export type CardCategory= "VALUE"|"TARGET"|"OUTCOME"|"SIDE_EFFECT";
@@ -17,7 +17,7 @@ export interface CardMeta{
 }
 
 export const CARD_META: Record<CardId, CardMeta>={
-    MULTIPLER: {id:"MULTIPLER", timing:"ACTION", category:"VALUE", stacking:"STACKABLE"},
+    MULTIPLIER: {id:"MULTIPLIER", timing:"ACTION", category:"VALUE", stacking:"STACKABLE"},
     SET_ROLL: {id:"SET_ROLL", timing:"ACTION", category:"VALUE", stacking:"STACKABLE"},
     SELF_HEAL: {id:"SELF_HEAL", timing:"ACTION", category:"SIDE_EFFECT", stacking:"STACKABLE"},
 
