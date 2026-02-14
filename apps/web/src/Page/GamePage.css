@@ -1,0 +1,348 @@
+/* =========================
+   GamePage.css - Spooky Gore Theme
+   ========================= */
+
+/* ---------- Base ---------- */
+:root{
+  --bg0:#050406;
+  --bg1:#0b0608;
+  --ink:#e9e3e7;
+  --muted:#a79aa4;
+
+  --blood:#b0002a;
+  --blood2:#ff1b5a;
+  --rust:#6a1c26;
+  --iron:#1a161c;
+
+  --panel:#0f0a0f;
+  --panel2:#140b10;
+
+  --edge: rgba(255, 35, 90, 0.35);
+  --edge2: rgba(176, 0, 42, 0.35);
+  --shadow: 0 18px 60px rgba(0,0,0,.55);
+  --shadow2: 0 10px 30px rgba(176,0,42,.18);
+}
+
+/* 如果你沒有包一個最外層 container，
+   這裡直接對 body / html 上主題 */
+html, body{
+  height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(1200px 700px at 20% 10%, rgba(176,0,42,.20), transparent 55%),
+    radial-gradient(900px 600px at 75% 35%, rgba(255,27,90,.12), transparent 60%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", "PingFang TC", sans-serif;
+}
+
+/* 噪點＋暗紅薄霧 */
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.02),
+      rgba(255,255,255,0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  mix-blend-mode: overlay;
+  opacity: .25;
+}
+
+body::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(800px 400px at 50% 80%, rgba(176,0,42,.10), transparent 60%);
+  opacity: .8;
+}
+
+/* ---------- General Typography ---------- */
+p{
+  margin: 6px 0;
+  color: var(--muted);
+  letter-spacing: .2px;
+}
+
+h1{
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 0 10px rgba(255,27,90,.18);
+}
+
+/* ---------- Layout helpers ----------
+   你目前回傳的是 <> ... </>，沒有最外層 div
+   所以用 :root 的 #root / body 直接做排版
+*/
+#root, body{
+  padding: 22px;
+}
+
+/* 讓主要內容像「儀式桌面」般集中 */
+#root{
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------- Buttons ---------- */
+button{
+  appearance: none;
+  border: 1px solid rgba(255, 27, 90, 0.25);
+  background:
+    linear-gradient(180deg, rgba(176,0,42,.22), rgba(10,6,10,.92));
+  color: var(--ink);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease;
+  box-shadow: 0 10px 18px rgba(0,0,0,.35), 0 0 0 rgba(255,27,90,0);
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+button:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255, 27, 90, 0.55);
+  box-shadow: var(--shadow2), 0 0 18px rgba(255,27,90,.20);
+  filter: saturate(1.15);
+}
+
+/* 血滴感：hover 時底部像滲出 */
+button:hover::after{
+  content:"";
+  display:block;
+  position: relative;
+  height: 0;
+}
+
+/* Disabled：像乾掉的血 */
+button:disabled{
+  cursor: not-allowed;
+  opacity: .55;
+  filter: grayscale(.35);
+  border-color: rgba(255,255,255,.10);
+  box-shadow: none;
+  transform: none;
+}
+
+/* 讓一堆操作按鈕排成一排 */
+button + button{
+  margin-left: 10px;
+}
+
+/* ---------- Panels (common vibe) ---------- */
+.CardPanel,
+.LogPanel-Content,
+#p1,
+#p2{
+  background:
+    radial-gradient(900px 220px at 10% 0%, rgba(255,27,90,.08), transparent 55%),
+    linear-gradient(180deg, rgba(20,11,16,.92), rgba(10,6,10,.96));
+  border: 1px solid rgba(255,27,90,.18);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 14px 14px;
+  margin: 14px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 邊緣刮痕 */
+.CardPanel::before,
+.LogPanel-Content::before,
+#p1::before,
+#p2::before{
+  content:"";
+  position:absolute;
+  inset:-40px;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.05), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,.04), transparent 50%),
+    radial-gradient(circle at 40% 90%, rgba(176,0,42,.10), transparent 55%);
+  transform: rotate(-6deg);
+  opacity: .55;
+  pointer-events:none;
+}
+
+/* ---------- CardPanel specifics ---------- */
+.CardPanel{
+  padding-top: 18px;
+}
+
+.CardPanel h1{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.CardPanel h1::before{
+  content:"";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--blood2);
+  box-shadow: 0 0 12px rgba(255,27,90,.35);
+}
+
+/* 你在 CardPanel 的 button id 用 card 名稱，這裡通吃 */
+.CardPanel button{
+  margin: 8px 10px 0 0;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+/* P1 / P2 外觀差異 */
+.CardPanel#P1{
+  border-color: rgba(80, 170, 255, .22);
+  box-shadow: 0 18px 60px rgba(0,0,0,.55), 0 0 20px rgba(80,170,255,.10);
+}
+
+.CardPanel#P2{
+  border-color: rgba(255, 27, 90, .28);
+  box-shadow: 0 18px 60px rgba(0,0,0,.55), 0 0 20px rgba(255,27,90,.14);
+}
+
+/* ---------- Log Panel ---------- */
+.LogPanel{
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.LogPanel-Content{
+  max-height: 220px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(8,6,9,.92), rgba(12,7,10,.96));
+}
+
+/* Scrollbar（Chrome/Edge） */
+.LogPanel-Content::-webkit-scrollbar{
+  width: 10px;
+}
+.LogPanel-Content::-webkit-scrollbar-track{
+  background: rgba(255,255,255,.04);
+  border-radius: 99px;
+}
+.LogPanel-Content::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(176,0,42,.55), rgba(255,27,90,.25));
+  border-radius: 99px;
+  border: 2px solid rgba(0,0,0,.25);
+}
+
+/* Log 每一行像「監視器記錄」 */
+.LogPanel-Content > div{
+  padding: 8px 10px;
+  margin: 8px 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2rem;
+  box-shadow: 0 8px 18px rgba(0,0,0,.25);
+}
+
+.LogPanel-Content > div:hover{
+  border-color: rgba(255,27,90,.28);
+  box-shadow: 0 8px 22px rgba(0,0,0,.30), 0 0 16px rgba(255,27,90,.12);
+}
+
+/* ---------- Character Picker ---------- */
+#p1, #p2{
+  margin-top: 16px;
+}
+
+#p1 h1, #p2 h1{
+  font-size: 16px;
+  color: var(--ink);
+}
+
+/* 顏色按鈕區 */
+#ColorsP1, #ColorsP2{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* 讓 id="red"/"blue" 的按鈕長得像選色器 */
+button#red{
+  border-color: rgba(255,27,90,.55);
+  box-shadow: 0 0 0 rgba(255,27,90,0);
+}
+button#red:hover{
+  box-shadow: 0 0 18px rgba(255,27,90,.25), 0 10px 18px rgba(0,0,0,.35);
+}
+
+button#blue{
+  border-color: rgba(80,170,255,.55);
+  background: linear-gradient(180deg, rgba(80,170,255,.16), rgba(10,6,10,.92));
+}
+button#blue:hover{
+  box-shadow: 0 0 18px rgba(80,170,255,.22), 0 10px 18px rgba(0,0,0,.35);
+}
+
+/* ---------- Gallery placeholder div ----------
+   你同時有 <div className="Gallery">Gallery</div> + <Gallery canvas />
+   這裡把 .Gallery 做成「標題牌」感
+*/
+.Gallery{
+  margin: 18px 0 8px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(176,0,42,.10), rgba(12,7,10,.92));
+  border: 1px solid rgba(255,27,90,.18);
+  box-shadow: var(--shadow2);
+  color: var(--ink);
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+
+/* Canvas 外觀：血色邊框＋陰影 */
+canvas{
+  display: block;
+  margin: 12px 0 18px 0;
+  border-radius: 18px;
+  border: 1px solid rgba(255,27,90,.22);
+  box-shadow: 0 18px 60px rgba(0,0,0,.60), 0 0 30px rgba(255,27,90,.10);
+  background: #ffffff; /* 你 canvas 內本來就是白底 */
+}
+
+/* ---------- Small spacing polish ----------
+   讓資訊 p 變成一排更像 HUD
+*/
+p{
+  display: inline-block;
+  margin-right: 14px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px){
+  #root, body{
+    padding: 14px;
+  }
+  button + button{
+    margin-left: 8px;
+  }
+  canvas{
+    width: 100%;
+    height: auto;
+  }
+}

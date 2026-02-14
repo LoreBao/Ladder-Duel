@@ -316,165 +316,229 @@ function Gallery({
     p2Color,
     p1Level,
     p2Level,
-    maxLevel=120,
-    width=600,
-    height=600,
-}: GalleryProps){
-    const canvasRef=useRef<HTMLCanvasElement|null>(null);
+    maxLevel = 120,
+    width = 600,
+    height = 600,
+}: GalleryProps) {
+
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
     useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
 
-    // Ensure canvas size matches props
-    canvas.width = width;
-    canvas.height = height;
-        
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+        canvas.width = width;
+        canvas.height = height;
 
-    // ---------- Helpers ----------
-    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-    // map level -> y position (top = maxLevel, bottom = 0)
-    const levelToY = (level: number) => {
-        const padTop = 60;
-        const padBottom = 60;
-        const usableH = height - padTop - padBottom;
-        const t = clamp(level, 0, maxLevel) / maxLevel; // 0..1
-        // t=1 => near top, t=0 => near bottom
-        return padTop + (1 - t) * usableH;
-    };
+        // ---------- Helpers ----------
+        const clamp = (v: number, min: number, max: number) =>
+            Math.max(min, Math.min(max, v));
 
-    // ---------- Clear & background ----------
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, width, height);
+        const levelToY = (level: number) => {
+            const padTop = 60;
+            const padBottom = 60;
+            const usableH = height - padTop - padBottom;
+            const t = clamp(level, 0, maxLevel) / maxLevel;
+            return padTop + (1 - t) * usableH;
+        };
 
-    // ---------- Center "mountain rock" rectangle ----------
-    const rockW = Math.max(60, width * 0.14);
-    const rockH = Math.max(260, height * 0.62);
-    const rockX = (width - rockW) / 2;
-    const rockY = (height - rockH) / 2;
+        // ---------- Clear ----------
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
 
-    ctx.fillStyle = "#9aa0a6"; // rock color
-    ctx.fillRect(rockX, rockY, rockW, rockH);
+        // =====================================================
+        //  CENTER MOUNTAIN CLIFF (VERTICAL CLIMB)
+        // =====================================================
 
-    // rock outline
-    ctx.strokeStyle = "#6b7280";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(rockX, rockY, rockW, rockH);
+        const cliffW = Math.max(90, width * 0.22);
+        const cliffH = Math.max(280, height * 0.68);
+        const cliffX = (width - cliffW) / 2;
+        const cliffY = (height - cliffH) / 2;
 
-    // ---------- P1 (left) ----------
-    const p1X = width * 0.22;
-    const p1Y = levelToY(p1Level);
+        // 右側 = 幾乎垂直的攀爬面
+        const wallX = cliffX + cliffW * 0.72;
 
-    // P1 sphere
-    const r = 18;
-    ctx.beginPath();
-    ctx.fillStyle = p1Color || "red";
-    ctx.arc(p1X, p1Y, r, 0, Math.PI * 2);
-    ctx.fill();
+        const jag = (amp: number) => (Math.random() * 2 - 1) * amp;
 
-    // P1 label (text + level)
-    ctx.fillStyle = p1Color || "red";
-    ctx.font = "18px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText("P1", p1X, p1Y - r - 8);
+        const topY = cliffY;
+        const botY = cliffY + cliffH;
 
-    ctx.font = "14px Arial";
-    ctx.textBaseline = "top";
-    ctx.fillText(`Lv ${p1Level}`, p1X, p1Y + r + 8);
+        // 不規則岩體輪廓
+        const p0 = { x: wallX, y: topY + 8 };
+        const p1 = { x: cliffX + cliffW * 0.15 + jag(10), y: topY + cliffH * 0.08 };
+        const p2 = { x: cliffX + cliffW * 0.05 + jag(12), y: topY + cliffH * 0.30 };
+        const p3 = { x: cliffX + cliffW * 0.18 + jag(12), y: topY + cliffH * 0.55 };
+        const p4 = { x: cliffX + cliffW * 0.08 + jag(10), y: topY + cliffH * 0.82 };
+        const p5 = { x: wallX, y: botY - 8 };
 
-    // ---------- P2 (right) ----------
-    const p2X = width * 0.78;
-    const p2Y = levelToY(p2Level);
-
-    // P2 sphere
-    ctx.beginPath();
-    ctx.fillStyle = p2Color || "blue";
-    ctx.arc(p2X, p2Y, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    // P2 label (text + level)
-    ctx.fillStyle = p2Color || "blue";
-    ctx.font = "18px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText("P2", p2X, p2Y - r - 8);
-
-    ctx.font = "14px Arial";
-    ctx.textBaseline = "top";
-    ctx.fillText(`Lv ${p2Level}`, p2X, p2Y + r + 8);
-
-    // ---------- Scale (maxLevel -> 0) ----------
-    const scaleX = width - 60;
-    const scaleTop = 60;
-    const scaleBottom = height - 60;
-
-    // scale line
-    ctx.strokeStyle = "#111827";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(scaleX, scaleTop);
-    ctx.lineTo(scaleX, scaleBottom);
-    ctx.stroke();
-
-    // ticks
-    const tickCount = 6; // includes top/bottom-ish ticks
-    ctx.font = "12px Arial";
-    ctx.fillStyle = "#111827";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-
-    for (let i = 0; i <= tickCount; i++) {
-        const t = i / tickCount; // 0..1 downward
-        const y = scaleTop + t * (scaleBottom - scaleTop);
-        const level = Math.round(maxLevel * (1 - t));
+        // 岩石漸層（增加立體感）
+        const rockGrad = ctx.createLinearGradient(cliffX, 0, wallX, 0);
+        rockGrad.addColorStop(0, "#8f949b");
+        rockGrad.addColorStop(1, "#6f7680");
+        ctx.fillStyle = rockGrad;
 
         ctx.beginPath();
-        ctx.moveTo(scaleX - 8, y);
-        ctx.lineTo(scaleX + 8, y);
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.lineTo(p4.x, p4.y);
+        ctx.lineTo(p5.x, p5.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // 外框
+        ctx.strokeStyle = "#4b5563";
+        ctx.lineWidth = 3;
         ctx.stroke();
 
-        // label every other tick (less clutter)
-        if (i % 2 === 0) ctx.fillText(String(level), scaleX + 14, y);
-    }
+        // 強調「垂直攀爬面」
+        ctx.strokeStyle = "#111827";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(wallX, topY + 10);
+        ctx.lineTo(wallX, botY - 10);
+        ctx.stroke();
 
-    // Explicit max & 0 labels (to satisfy requirement clearly)
-    ctx.font = "13px Arial";
-    ctx.fillText(String(maxLevel), scaleX + 14, scaleTop);
-    ctx.fillText("0", scaleX + 14, scaleBottom);
+        // 岩石裂紋
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(17,24,39,0.25)";
+        for (let i = 0; i < 6; i++) {
+            const y = topY + (i + 1) * (cliffH / 7) + jag(6);
+            const x1 = cliffX + cliffW * 0.18 + jag(8);
+            const x2 = wallX - 6 + jag(6);
 
-    // Mark P1 / P2 level positions on scale
-    const p1ScaleY = levelToY(p1Level);
-    const p2ScaleY = levelToY(p2Level);
+            ctx.beginPath();
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x2, y + jag(8));
+            ctx.stroke();
+        }
 
-    ctx.lineWidth = 3;
+        // 小突起（像可抓點）
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        for (let i = 0; i < 5; i++) {
+            const y = topY + cliffH * (0.15 + i * 0.16) + jag(6);
+            const w = 10 + Math.random() * 14;
+            const h = 3 + Math.random() * 4;
+            ctx.fillRect(wallX - w - 4, y, w, h);
+        }
 
-    // P1 marker
-    ctx.strokeStyle = p1Color || "red";
-    ctx.beginPath();
-    ctx.moveTo(scaleX - 14, p1ScaleY);
-    ctx.lineTo(scaleX + 14, p1ScaleY);
-    ctx.stroke();
-    ctx.fillStyle = p1Color || "red";
-    ctx.fillText("P1", scaleX - 40, p1ScaleY);
+        // =====================================================
+        // P1 LEFT
+        // =====================================================
 
-    // P2 marker
-    ctx.strokeStyle = p2Color || "blue";
-    ctx.beginPath();
-    ctx.moveTo(scaleX - 14, p2ScaleY);
-    ctx.lineTo(scaleX + 14, p2ScaleY);
-    ctx.stroke();
-    ctx.fillStyle = p2Color || "blue";
-    ctx.fillText("P2", scaleX - 40, p2ScaleY);
+        const p1X = width * 0.22;
+        const p1Y = levelToY(p1Level);
+        const r = 18;
+
+        ctx.beginPath();
+        ctx.fillStyle = p1Color || "red";
+        ctx.arc(p1X, p1Y, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = p1Color || "red";
+        ctx.font = "18px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText("P1", p1X, p1Y - r - 8);
+
+        ctx.font = "14px Arial";
+        ctx.textBaseline = "top";
+        ctx.fillText(`Lv ${p1Level}`, p1X, p1Y + r + 8);
+
+        // =====================================================
+        // P2 RIGHT
+        // =====================================================
+
+        const p2X = width * 0.78;
+        const p2Y = levelToY(p2Level);
+
+        ctx.beginPath();
+        ctx.fillStyle = p2Color || "blue";
+        ctx.arc(p2X, p2Y, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = p2Color || "blue";
+        ctx.font = "18px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText("P2", p2X, p2Y - r - 8);
+
+        ctx.font = "14px Arial";
+        ctx.textBaseline = "top";
+        ctx.fillText(`Lv ${p2Level}`, p2X, p2Y + r + 8);
+
+        // =====================================================
+        // SCALE
+        // =====================================================
+
+        const scaleX = width - 60;
+        const scaleTop = 60;
+        const scaleBottom = height - 60;
+
+        ctx.strokeStyle = "#111827";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(scaleX, scaleTop);
+        ctx.lineTo(scaleX, scaleBottom);
+        ctx.stroke();
+
+        const tickCount = 6;
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "#111827";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+
+        for (let i = 0; i <= tickCount; i++) {
+            const t = i / tickCount;
+            const y = scaleTop + t * (scaleBottom - scaleTop);
+            const level = Math.round(maxLevel * (1 - t));
+
+            ctx.beginPath();
+            ctx.moveTo(scaleX - 8, y);
+            ctx.lineTo(scaleX + 8, y);
+            ctx.stroke();
+
+            if (i % 2 === 0) ctx.fillText(String(level), scaleX + 14, y);
+        }
+
+        ctx.font = "13px Arial";
+        ctx.fillText(String(maxLevel), scaleX + 14, scaleTop);
+        ctx.fillText("0", scaleX + 14, scaleBottom);
+
+        // P1 / P2 scale markers
+        const p1ScaleY = levelToY(p1Level);
+        const p2ScaleY = levelToY(p2Level);
+
+        ctx.lineWidth = 3;
+
+        ctx.strokeStyle = p1Color || "red";
+        ctx.beginPath();
+        ctx.moveTo(scaleX - 14, p1ScaleY);
+        ctx.lineTo(scaleX + 14, p1ScaleY);
+        ctx.stroke();
+        ctx.fillStyle = p1Color || "red";
+        ctx.fillText("P1", scaleX - 40, p1ScaleY);
+
+        ctx.strokeStyle = p2Color || "blue";
+        ctx.beginPath();
+        ctx.moveTo(scaleX - 14, p2ScaleY);
+        ctx.lineTo(scaleX + 14, p2ScaleY);
+        ctx.stroke();
+        ctx.fillStyle = p2Color || "blue";
+        ctx.fillText("P2", scaleX - 40, p2ScaleY);
+
     }, [p1Color, p2Color, p1Level, p2Level, maxLevel, width, height]);
 
-    return(
+    return (
         <div>
-            <canvas ref={canvasRef}></canvas> 
+            <canvas ref={canvasRef}></canvas>
         </div>
-    )
+    );
 }
+
 
