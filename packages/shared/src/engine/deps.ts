@@ -3,7 +3,7 @@ import { CARD_META, CardId } from "../types";
 export interface EngineDeps{
     rollDice():number;
     createFreshDeck(): CardId[];
-    shuffle (xs:T[]): T[];
+    shuffle<T>(xs:T[]): T[];
 }
 
 export function createDefaultDeps(): EngineDeps{

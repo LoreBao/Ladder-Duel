@@ -178,13 +178,26 @@ export function reduce(
                     }
                 }
             }
-            return appendLog(state,"Incomplete");
+            return appendLog(newState, "Play Card, Done");
         }
 
         case "SKIP_CARD":{
-            let newState={...state};
-            newState.phase="ROLL";
-            return appendLog(newState,"Skip Card");
+            if(state.phase==="ACTION"){
+                if(action.player!=attacker){
+                    return appendLog(state,`${action.player} is not the attacker`);
+                }
+                let newState = { ...state };
+                newState.phase = "ROLL";
+                return appendLog(newState, `${action.player} Skip's Card`);
+            }
+            else if(state.phase==="REACTION"){
+                if(action.player!=defender){
+                    return appendLog(state,`${action.player} is not the defender`);
+                }
+                let newState = { ...state };
+                newState.phase = "ROLL";
+                return appendLog(newState, `${action.player} Skip's Card`);  
+            }
         }
 
         case "ROLL_DICE":{
