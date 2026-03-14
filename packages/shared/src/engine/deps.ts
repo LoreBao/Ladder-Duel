@@ -3,7 +3,7 @@ import { CARD_META, CardId } from "../types";
 export interface EngineDeps{
     rollDice():number;
     createFreshDeck(): CardId[];
-    shuffle<T>(xs:T[]): T[];
+    shuffle (xs:T[]): T[];
 }
 
 export function createDefaultDeps(): EngineDeps{
@@ -12,7 +12,7 @@ export function createDefaultDeps(): EngineDeps{
             return Math.floor((Math.random())*7)
         },
         createFreshDeck():CardId[]{
-            const all:CardId[]=["REVERSE","MULTIPLER","ESCAPE","NEG_NEG_POS","HALF_DAMAGE","SET_ROLL","NULLIFY","SELF_HEAL"]
+            const all:CardId[]=["REVERSE","MULTIPLIER","ESCAPE","NEG_NEG_POS","HALF_DAMAGE","SET_ROLL","NULLIFY","SELF_HEAL"]
             const deck:CardId[]=[];
             for(const c of all){
                 deck.push(c,c);

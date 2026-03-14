@@ -56,7 +56,6 @@ function drawOneWithReset(state:GameState,deps:EngineDeps):{state: GameState; ca
 
 function isIntInRange(x:unknown, lo:number, hi:number): x is number{
     return typeof x==="number"&& Number.isFinite(x)&&Number.isInteger(x)&&x>=lo&&x<=hi;
-
 }
 
 function getEffectiveCards(turnCtx:GameState["turnCtx"]):{
@@ -122,11 +121,62 @@ export function reduce(
         case "RESET":{
             return createInitalState(deps);
         }
-        
         case "PLAY_CARD":{
             const cardMeta=CARD_META[action.cardId];
-            if(state.phase==="ACTION"&&action.player!=attacker){
+            if(state.phase==="ACTION"){
+                if(action.player!==attacker){
+                    return appendLog(state,`${state.phase} does not allow the player: ${action.player} to play card`)
+                }
+                if(state.turnCtx.attackerCard){
+                    return appendLog(state,`A Card (${state.turnCtx.attackerCard}) Already Exists Before Attacker Plays a New Card`)
+                }
+                if(cardMeta.timing!="ACTION" && cardMeta.timing!="BOTH"){
+                    return appendLog(state,`Wrong Timing (${state.turnCtx.attackerCard} is not allowed at ACTION , only allowed at ${cardMeta.timing})`)
+                }
                 return appendLog(state,`${state.phase} Not Allowed ${action.player} Play Card!`);
+            }
+
+            if(state.phase==="REACTION"){
+                if(action.player!==defender){
+                    return appendLog(state,`${state.phase} does not allow the player: ${action.player} to play card`)
+                }
+                if(state.turnCtx.defenderCard){
+                    return appendLog(state,`A Card (${state.turnCtx.defenderCard}) Already Exists Before Defender Plays a New Card`)
+                }
+                if(cardMeta.timing!="REACTION" && cardMeta.timing!="BOTH"){
+                    return appendLog(state,`Wrong Timing (${state.turnCtx.defenderCard} is not allowed at REACTION , only allowed at ${cardMeta.timing})`)
+                }
+                return appendLog(state,`${state.phase} Not Allowed ${action.player} Play Card!`);
+            }
+            
+            if(!state.players[action.player].hand.includes(action.cardId)){
+                return appendLog(state, `${action.cardId} not in ${action.player}'s hand`)
+            }
+
+            if(action.cardId==="SET_ROLL"){
+                if(isIntInRange(action.payload.chosen,0,6)){
+                    return appendLog(state, `${action.payload} out of r a n g e`)
+                }
+            }
+
+            if(action.cardId==="MULTIPLIER"){
+                if(action.payload.factor!==1&&action.payload.factor!==2&&action.payload.factor!==3){
+                    return appendLog(state, `${action.payload.factor} out of range (1,2,3)`)
+                }
+            }
+
+            const removeStatus=removeOne(state.players[action.player].hand,action.cardId);
+            if(!removeStatus.ok){
+                return appendLog(state, `remove ${action.cardId} failed`);
+            }
+            const newState:GameState = {
+                ...state,
+                players:{
+                    ...state.players,
+                    [action.player]:{
+                        ...state.players[action.player],hand:removeStatus.next
+                    }
+                }
             }
             return appendLog(state,"Incomplete");
         }

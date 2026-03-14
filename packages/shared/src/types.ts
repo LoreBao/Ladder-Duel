@@ -32,10 +32,6 @@ export const CARD_META: Record<CardId, CardMeta>={
 export type SetRollPayload={chosen:number};
 export type MultiplierPayload={factor: 1|2|3};
 
-type CardPayloadByID={
-    SET_ROLL:SetRollPayload;
-    MULTIPIER:MultiplierPayload;
-}
 
 export type PlayedCard=
     |{id:"SET_ROLL"; payload:SetRollPayload}
@@ -93,4 +89,7 @@ export type GameAction=
     | {type: "DISCARD_CARD",player: PlayerId; cardId: CardId}
     | {type: "END_TURN", player: PlayerId}
     | {type: "RESET"}
+
+
+
 
