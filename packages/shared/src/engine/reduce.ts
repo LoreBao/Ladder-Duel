@@ -2,7 +2,7 @@ import type { EngineDeps } from "./deps";
 import { createDefaultDeps } from "./deps";
 import { createInitalState } from "./init";
 import { appendLog,clampPosition,getOpponent } from "./utils";
-import { CARD_META, type CardCategory, type CardId, type GameAction, type GameState } from "../types";
+import { CARD_META, PlayerId, type CardCategory, type CardId, type GameAction, type GameState } from "../types";
 
 export function allow(phase:GameState["phase"]):GameAction["type"][]{
     /*Allow Actions Based on Current Phase*/
@@ -201,37 +201,79 @@ export function reduce(
         }
 
         case "ROLL_DICE":{
-            const diceValue=deps.rollDice();
-            let newState={...state};
-            newState.lastroll={
-                roller:state.currentPlayer,
-                value:diceValue
+            if(action.player!==attacker){
+                return appendLog(state,`${action.player} is not attacker, cannot roll dice`)
             }
-            newState.phase="RESOLVE";
-            return appendLog(newState,`${newState.currentPlayer} Has Rolled a Value of ${diceValue}`);
+
+            let newValue=0;
+            if(state.turnCtx.attackerCard==="SET_ROLL"&&state.turnCtx.attackerCard.payload){
+                if(isIntInRange(state.turnCtx.attackerCard.payload.chosen,0,6)){
+                    newValue=state.turnCtx.attackerCard.payload.chosen
+                    state=appendLog(state,`SET_ROLL use successfully, dice value is now ${newValue}`)
+                }
+                else{
+                    newValue= deps.rollDice();
+                    state=appendLog(state, "SET_ROLL Card Could Exceed Limit or Not an Interger, Fallback to Ro11ing Dice")
+                }
+            }
+            else{
+                newValue=deps.rollDice()
+                state=appendLog(state,`Roll Dice (${newValue}) Succcessful`)
+            }
+
+            return {
+                ...state,
+                turnCtx:{
+                    ...state.turnCtx,
+                    roll:newValue
+                },
+                phase:"REACTION"
+            };
+
         }
 
         case "RESOLVE_ROLL":{
-            if(!state.lastroll){
-                let newState={...state};
-                newState.phase="DRAW"
-                return appendLog(newState, "Error: Without Essential Last Roll");
+            const baseRoll=state.turnCtx.roll
+            if(!isIntInRange(baseRoll,0,6)){
+                return appendLog(state, "Roll Dice Value Does not Follow the Rules")
+            }
+            const effectiveness=getEffectiveCards(state.turnCtx)
+            if(effectiveness.attackerNullify&&effectiveness.defenderNullify){
+                state=appendLog(state,"Both (Attacker & Defender) Cards are Nullfied")
+            }
+            else if(effectiveness.attackerNullify){
+                state=appendLog(state,"Defender Card Nullify")
+            }
+            else if(effectiveness.defenderNullify){
+                state=appendLog(state,"Attacker Card Nullify")
             }
 
-            const target=getOpponent(state.lastroll.roller);
-            const delta=-state.lastroll.value
-            
-            const newPosition=clampPosition(state.players[target].position+delta)
-            let newState={...state};
-            newState.players[target].position=newPosition;
-            newState.phase="DRAW"
-            newState=appendLog(newState, `${target}->${newPosition}`)
-            
-            if(newPosition<=0){
-                newState.winner=getOpponent(target);
+            state=appendLog(state,`current baseroll: ${baseRoll}`)
+            let m=state.turnCtx.multiplier;
+            if(m!==1&&m!=2&&m!==3){
+                state=appendLog(state,`Multiplier Number (${m}) cannot be used, switch to default value--1`)
+                m=1
+            }
+            let finalValue=baseRoll*m
+            let target:"attacker"|"defender"="defender"
+            let attackerCard=effectiveness.attacker;
+            let defenderCard=effectiveness.defender;
+            if(defenderCard?.id==="REVERSE"){
+                target="attacker"
+                state=appendLog(state,`Defender has used ${defenderCard}, Roles are Reversed!!!!!`)
             }
 
-            return appendLog(newState, `Winner is ${newState.winner}`)
+            const nextPlayers={...state.players}
+            // players:record<PlayerID,PlayerState>
+            // playerState: Object=> id, position, hand
+
+            const applyDelta=(playerid:PlayerId,delta:number)=>{
+                nextPlayers[playerid] ={
+                    ...nextPlayers[playerid],
+                    position:clampPosition(nextPlayers[playerid].position+delta)
+                }
+            }
+            
         }
 
         case "DRAW_CARD":{
