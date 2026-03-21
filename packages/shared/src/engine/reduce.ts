@@ -273,14 +273,55 @@ export function reduce(
                     position:clampPosition(nextPlayers[playerid].position+delta)
                 }
             }
-            
+            // Processing Outcome
+            if(target==="attacker"){
+                applyDelta(attacker,-finalValue)
+                state=appendLog(state,"REVERSE CARD::: Current Target is now the Attacker! Attacker will fall down")
+            }
+            else{
+                if(defenderCard?.id==="ESCAPE"){
+                    applyDelta(defender,0);
+                    state=appendLog(state, "ESCAPE CARD::: Defender has Moved 0 Steps")
+                }
+                else if(defenderCard?.id==="NEG_NEG_POS"){
+                    applyDelta(defender, finalValue);
+                    state=appendLog(state, `NEG_NEG_POS::: Defender has went up ${finalValue} steps`)
+                }
+                else if(defenderCard?.id==="HALF_DAMAGE"){
+                    applyDelta(defender, -Math.ceil(finalValue/2));
+                    state=appendLog(state, `HALF DAMAGE ::: Defender has went down ${Math.ceil(finalValue/2)} steps`)
+                }
+                else{
+                    applyDelta(defender,-finalValue)
+                    state=appendLog(state, "Current Target is now the Defender! Defender will fall down")
+                }                
+            }
+            // Processing Side-effect
+            if(attackerCard?.id==="SELF_HEAL"){
+                applyDelta(attacker,baseRoll)
+                state=appendLog(state,`SELF HEAL::: Attacker has healed himself for ${baseRoll}`)
+            }
+
+            let nextState={...state,players:nextPlayers}
+
+            if(nextState.players.P1.position<=0 && nextState.players.P2.position<=0){
+                nextState={...nextState,winner:"DRAWN"}
+            }
+            else if(state.players.P1.position<=0){
+                nextState={...nextState,winner:"P2"}   
+            }
+            else{
+                nextState={...nextState,winner:"P1"}
+            }
+            nextState=appendLog(nextState,`Winners are ${nextState.winner}`)
+            nextState={...nextState,phase:"DRAW"}
+            return nextState;
         }
 
         case "DRAW_CARD":{
+            const cPlayer=state.currentPlayer;
             if(state.deck.length===0){
-                let newState={...state};
-                newState.phase="END"
-                return appendLog(newState, "End Turn")
+                const newDeck=deps.shuffle(deps.createFreshDeck())  
             }
             const drawCard=state.deck.pop()  
             let newState={...state};
