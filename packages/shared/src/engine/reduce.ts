@@ -2,7 +2,7 @@ import type { EngineDeps } from "./deps";
 import { createDefaultDeps } from "./deps";
 import { createInitalState } from "./init";
 import { appendLog,clampPosition,getOpponent } from "./utils";
-import { CARD_META, PlayerId, type CardCategory, type CardId, type GameAction, type GameState } from "../types";
+import { CARD_META, PlayerId, TurnContext, type CardCategory, type CardId, type GameAction, type GameState } from "../types";
 
 export function allow(phase:GameState["phase"]):GameAction["type"][]{
     /*Allow Actions Based on Current Phase*/
@@ -320,26 +320,102 @@ export function reduce(
 
         case "DRAW_CARD":{
             const cPlayer=state.currentPlayer;
-            if(state.deck.length===0){
-                const newDeck=deps.shuffle(deps.createFreshDeck())  
-            }
-            const drawCard=state.deck.pop()  
-            let newState={...state};
-            if(drawCard!==undefined){
-                 newState.players[state.currentPlayer].hand = [...newState.players[state.currentPlayer].hand, drawCard]
+            const drawReturn = drawOneWithReset(state,deps)
+            let newState = drawReturn.state
+            const card = drawReturn.card
+
+           
+            newState={
+                ...newState, 
+                players:{
+                    ...newState.players,
+                    [cPlayer]:{
+                        ...newState.players[cPlayer],
+                        hand:[...newState.players[cPlayer].hand,card]
+                    }
+                } 
             }
 
-            newState.phase="END";
-            return appendLog(newState,`${newState.currentPlayer} has drawn ${drawCard}!`);
+            newState=appendLog(newState, `${cPlayer} has drawn ${card}, now has ${newState.players[cPlayer].hand.length} cards!`)
+            if(newState.players[cPlayer].hand.length>5){
+                newState=appendLog(newState, "A Card Must be Discarded as Hand Reaches Maximum Length!")
+            }
+            else{
+                newState={...newState, phase:"END"}
+            }
+
+            return newState;
+        }   
+
+        case "DISCARD_CARD": {
+            if(action.player!=state.currentPlayer){
+                state=appendLog(state,`${action.player} is not ${state.currentPlayer}, cannot discard card`);
+                return state;
+            }
+            
+            if(state.players[state.currentPlayer].hand.length<=5){
+                state=appendLog(state, `${state.currentPlayer}'s hand need more than 5 cards to discard`);
+                return state;
+            }
+
+            const removedHand=removeOne(state.players[state.currentPlayer].hand,action.cardId)
+            if(!removedHand.ok){
+                state=appendLog(state, `${action.cardId} cannot be removed from ${state.currentPlayer}'s hand`)
+                return state;
+            }
+
+
+            let newState={
+                ...state,
+                players:{
+                    ...state.players,
+                    [state.currentPlayer]:{
+                        ...state.players[state.currentPlayer],
+                        hand:removedHand.next
+                    }
+                }
+            }
+
+            newState=appendLog(newState, `${state.currentPlayer} discard ${action.cardId} successful, current hand lenght is at ${newState.players[newState.currentPlayer].hand.length}`)
+            newState={...newState,phase:"END"}
+            return newState;
+
         }
 
         case "END_TURN":{
-            let newState={...state};
-            newState.turn+=1;
-            newState.phase="ACTION"
-            newState.currentPlayer=getOpponent(newState.currentPlayer);
-            newState.lastroll=undefined;
-            return appendLog(newState, `End of Turn, Changing Player ${newState.currentPlayer}`);
+            if(action.player!==attacker){
+                state=appendLog(state,`${action.player} is not the attacker, cannot request end turn!`)
+                return state;
+            }
+
+            const nextAttacker= getOpponent(attacker);
+            const nextDefender= getOpponent(nextAttacker);
+
+            const newTurnCtx:TurnContext={
+                attacker: nextAttacker,
+                defender: nextDefender,
+
+                attackerCard: undefined,
+                defenderCard: undefined,
+
+                roll: undefined,
+                multiplier: 1,
+                flags: {
+                    attackerNullify: undefined,
+                    defenderNullify: undefined,
+                }
+            }
+
+            state={
+                ...state,
+                turn:state.turn+1, 
+                currentPlayer:nextAttacker, 
+                phase:"ACTION",
+                turnCtx:newTurnCtx
+            }
+
+            state=appendLog(state,`Round has Ended, New Attacker is : ${nextAttacker}. New Defender is : ${nextDefender}`)
+            return state;
         }
     }
 }
