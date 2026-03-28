@@ -188,6 +188,7 @@ export default function GamePage_practice() {
             // TODO
             // 實作方向:
             // - 明確關閉 picker，而不是再切一次 toggle
+            setColorPickerState(false)
 
           }}
         />
@@ -203,10 +204,11 @@ export default function GamePage_practice() {
           */}
           <h3>Game Info</h3>
           <div className="info-row">
-            <div>{/*HW 22 TODO: 顯示 Winner 訊息*/}</div>
+            <div>{winnerText}</div>
           </div>
           <div className="info-row">
             {/*HW 22: TODO: 顯示 Turn/ Phase / Attacker / Defender 訊息*/}
+            <p>Attacker: {attacker}, Phase: {phase}, Defender: {defender}, Turn: {turn}</p>
 
           </div>
         </section>
@@ -293,7 +295,11 @@ function CharacterPicker({ open, value, onChange, onClose }: CharacterPickerProp
             // - 判斷目前 color 是否為 P1 已選值
             // - 若是，套用 active className
             // - 按下後呼叫 onChange("P1", color)
+            if(color=P1.color){
+              onchange("P1",color)
+            }
 
+            
           })}
         </div>
       </div>
@@ -308,6 +314,9 @@ function CharacterPicker({ open, value, onChange, onClose }: CharacterPickerProp
             // - 判斷目前 color 是否為 P2 已選值
             // - 若是，套用 active className
             // - 按下後呼叫 onChange("P2", color)
+            if(color=P2.color){
+              onchange("P2",color)
+            }
 
           })}
         </div>
