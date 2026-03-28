@@ -331,7 +331,7 @@ interface PlayerInfoPanelProps {
   playerHand: CardId[];
 }
 
-function PlayerInfoPanel({ playerID, playerPosition, playerHand }: PlayerInfoPanelProps) {
+function PlayerInfoPanel({playerID, playerPosition, playerHand}: PlayerInfoPanelProps) {
   // 新增元件（原始檔對應概念是 CardPanel，但目標版重構成資訊更完整的 PlayerInfoPanel）
   // Args:
   // - playerID: 玩家 ID
@@ -348,6 +348,18 @@ function PlayerInfoPanel({ playerID, playerPosition, playerHand }: PlayerInfoPan
   // 3. 若 playerHand 非空，列出卡牌清單。
   // 4. key 建議組合 playerID + card + index，避免重複。
   // HW 22 TODO
+
+  const pId=playerID;
+  const pPos=playerPosition;
+  const pHand=playerHand;
+
+  if(pHand.length>0){
+    
+  }
+
+  return(
+
+  )
 
 }
 
