@@ -35,7 +35,7 @@ export default function GamePage_practice() {
   // 4. onChange 需改為 immutable update，不能直接改寫原本 state 物件。
   // 5. executeDispatchFn 不應保留在重構版主流程中；
   //    應改由各子元件直接 dispatch 正確的 GameAction，避免硬編碼 MULTIPLER / card key 錯誤。
-  // 6. JSX 回傳結構需與目標版一致，並對應 CSS className。
+  // 6. JSX 回傳結構需與目標版一致，並對應 CSS 
 
   // Step 1: 建立穩定 deps（只初始化一次）
   const deps = useMemo(() => {
@@ -208,16 +208,21 @@ export default function GamePage_practice() {
           </div>
           <div className="info-row">
             {/*HW 22: TODO: 顯示 Turn/ Phase / Attacker / Defender 訊息*/}
-            <p>Attacker: {attacker}, Phase: {phase}, Defender: {defender}, Turn: {turn}</p>
-
+            <div className="row">Attacker {attacker}</div>
+            <div className="row">Defender {defender}</div>
+            <div className="row">Phase {phase}</div>
+            <div className="row">Turn {state.turn}</div>
+            
           </div>
         </section>
 
         <section className="arena-row">
-          <PlayerInfoPanel
-            {}
-            
 
+
+          <PlayerInfoPanel
+            playerID={"P1"}
+            playerPosition={state.players.P1.position}
+            playerHand={state.players.P1.hand} 
           />
 
           <div className="gallery-shell">
@@ -233,7 +238,9 @@ export default function GamePage_practice() {
           </div>
 
           <PlayerInfoPanel
-            {p1Color, p2Color, p1Level, p2Level}
+            playerID={"P2"}
+            playerPosition={state.players.P2.position}
+            playerHand={state.players.P2.hand} 
           />
         </section>
 
@@ -296,7 +303,7 @@ function CharacterPicker({ open, value, onChange, onClose }: CharacterPickerProp
             // - 判斷目前 color 是否為 P1 已選值
             // - 若是，套用 active className
             // - 按下後呼叫 onChange("P1", color)
-            if(color=P1.color){
+            if(color===P1.color){
               onchange("P1",color)
             }
 
@@ -361,10 +368,24 @@ function PlayerInfoPanel({playerID, playerPosition, playerHand}: PlayerInfoPanel
   }
 
   return(
-    <p>Player Information</p>
-    <aside>Player Id {pId}, Player Pos: {pPos}, Player Hand: {pHand}</aside>
+    <aside>
+      <h4>Player Information Tab</h4>
+      <div>Position: {pPos}</div>
+      <div>Number of Cards: {pHand.length}</div>
+      <div>
+        {
+          pHand.length>0&&
+            <ul>
+              {pHand.map((card,index)=>{
+                return(
+                  <li id={`${playerID}-${card}-${index}`}>{card}</li>
+              )
+          })}
+        </ul>
+        }
+      </div>
+    </aside>
   )
-
 }
 
 interface LogPanelProps {
@@ -550,7 +571,71 @@ function CardButtons({ disabled, player, hand, dispatch }: CardButtonsProps) {
     //   3. 驗證 phase 合法性（那是 shared engine / reducer 的責任）
 
     // TODO: 請依上述步驟自行完成 JSX 與事件處理
-    <></>
+    <>
+    <div>
+      {hand.length===0?<p>No Card</p>:
+        <div> 
+          {hand.map((card, cardIndex)=>{
+            return(
+              <div>
+                <button 
+                  key={`${cardIndex}-${card}`}
+                  onClick={()=>{
+                    const isSetRoll=card==="SET_ROLL";
+                    if(isSetRoll){
+                      setShowSetRollInput(true)
+                      return
+                    }
+                    else if(card==="MULTIPLIER"){
+                      dispatch({
+                        type:"PLAY_CARD",
+                        player:player,
+                        cardId:"MULTIPLIER",
+                        payload:{
+                          factor:2
+                        }
+                      })
+                    }
+                    else{
+                      dispatch({
+                        type:"PLAY_CARD",
+                        player:player,
+                        cardId:card
+                      })
+                    }
+                  }}
+                  >
+                    {card}
+                </button>
+                {card==="SET_ROLL"&& showSetRollInput&&
+                  <div>
+                    <input type="number" 
+                  
+                      min={0} 
+                      max={6} 
+                      step={1} 
+                      value={setRollValue}
+
+                      onChange={
+                        ()=>{
+                          
+                        }
+                      }
+                      ></input>
+
+                    <button onClick={
+
+                    }>Confirm?</button>
+                  </div>
+                }
+            </div>
+            )
+          })}
+
+        </div>
+      }
+      </div>
+    </>
   );
 }
 interface OperatePanelProps {
@@ -575,7 +660,7 @@ function OperatePanel({
   handDefender,
   canPlayInAction,
   canPlayInReaction,
-  dispatch,
+  dispatch, 
   needDiscard,
 }: OperatePanelProps) {
   // Args:
@@ -831,7 +916,84 @@ function OperatePanel({
     // - 若 needDiscard 為 true，視規則可考慮讓 End button disabled（但這邏輯通常由 can.END_TURN 控制）
 
     // TODO: 請依上述步驟自行完成 JSX 與事件處理
-    <></>
+    <>
+    <section>
+      <h3>Operate Panel</h3>
+      <div>
+        <button 
+          disabled={can.ACTION_SKIP} 
+          onClick={()=>{
+            dispatch({
+              type:"SKIP_CARD",
+              player:attacker
+            })
+          }}
+        >Action Skip</button>
+        <button 
+          disabled={can.ROLL_DICE}
+          onClick={()=>{
+            dispatch({
+              type:"ROLL_DICE",
+              player:attacker
+            })
+          }
+        }
+        >Roll</button>
+        <button 
+          disabled={can.REACTION_SKIP}
+          onClick={()=>{
+            dispatch({
+              type:"SKIP_CARD",
+              player:defender
+            })
+          }}
+          >Reaction Skip</button>
+        <button 
+          disabled={can.RESOLVE_ROLL}
+          onClick={()=>{
+            dispatch({
+              type:"RESOLVE_ROLL",
+            })
+          }}
+          >Resolve</button>
+        <button 
+          disabled={can.DRAW_CARD}
+          onClick={()=>{
+            dispatch({
+              type:"DRAW_CARD"
+            })
+          }}
+          >Draw Card</button>
+        <button 
+          disabled={can.END_CARD}
+          onClick={()=>{
+            dispatch({
+              type:"END_TURN",
+              player:attacker
+            })
+          }}
+          >End Turn</button>
+        <button 
+          disabled={can.RESET}
+          onClick={()=>{
+            dispatch({
+              type:"RESET"
+            })
+          }}
+          >Reset</button>
+      </div>
+      <h3>Player Card Panel</h3>
+      <div>
+          {state.phase==="ACTION"&&}
+          {state.phase==="REACTION"&&}
+          {(state.phase!="ACTION"&& state.phase!="REACTION")&&
+            <div>No Card Played in This Phase!</div>
+          }
+      </div>
+
+
+    </section>
+    </>
   );
 }
 
