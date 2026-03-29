@@ -215,7 +215,8 @@ export default function GamePage_practice() {
 
         <section className="arena-row">
           <PlayerInfoPanel
-            {/*HW 22 TODO: 顯示玩家資訊: 給予正確參數*/}
+            {}
+            
 
           />
 
@@ -232,7 +233,7 @@ export default function GamePage_practice() {
           </div>
 
           <PlayerInfoPanel
-            {/*HW 22 TODO: 顯示玩家資訊: 給予正確參數*/}
+            {p1Color, p2Color, p1Level, p2Level}
           />
         </section>
 
@@ -315,6 +316,7 @@ function CharacterPicker({ open, value, onChange, onClose }: CharacterPickerProp
             // - 若是，套用 active className
             // - 按下後呼叫 onChange("P2", color)
             if(color=P2.color){
+              active className
               onchange("P2",color)
             }
 
@@ -353,12 +355,14 @@ function PlayerInfoPanel({playerID, playerPosition, playerHand}: PlayerInfoPanel
   const pPos=playerPosition;
   const pHand=playerHand;
 
+
   if(pHand.length>0){
-    
+    return pHand;
   }
 
   return(
-
+    <p>Player Information</p>
+    <aside>Player Id {pId}, Player Pos: {pPos}, Player Hand: {pHand}</aside>
   )
 
 }
