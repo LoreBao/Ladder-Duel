@@ -10,7 +10,7 @@ export function createPlayer(id:PlayerId, initialHand:CardId[]):PlayerState{
     }
 }
 
-export function createInitalState(deps:EngineDeps):GameState{
+export function createInitialState(deps:EngineDeps):GameState{
     let newDeck=deps.createFreshDeck();
     newDeck=deps.shuffle(newDeck);
     

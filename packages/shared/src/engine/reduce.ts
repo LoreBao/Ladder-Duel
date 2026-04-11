@@ -2,7 +2,7 @@ import type { EngineDeps } from "./deps";
 import { createDefaultDeps } from "./deps";
 import { createInitalState } from "./init";
 import { appendLog,clampPosition,getOpponent } from "./utils";
-import { CARD_META, PlayerId, TurnContext, type CardCategory, type CardId, type GameAction, type GameState } from "../types";
+import { CARD_META, PlayerId, TurnContext, type CardId, type GameAction, type GameState , type PlayedCard } from "../types";
 
 export function allow(phase:GameState["phase"]):GameAction["type"][]{
     /*Allow Actions Based on Current Phase*/
@@ -19,6 +19,8 @@ export function allow(phase:GameState["phase"]):GameAction["type"][]{
             return ["DRAW_CARD","DISCARD_CARD","RESET"]
         case "END":
             return ["END_TURN", "RESET"]
+        default:
+            return ["RESET"]
     }
 }
 
@@ -133,7 +135,7 @@ export function reduce(
                 if(cardMeta.timing!="ACTION" && cardMeta.timing!="BOTH"){
                     return appendLog(state,`Wrong Timing (${state.turnCtx.attackerCard} is not allowed at ACTION , only allowed at ${cardMeta.timing})`)
                 }
-                return appendLog(state,`${state.phase} Not Allowed ${action.player} Play Card!`);
+
             }
 
             if(state.phase==="REACTION"){
@@ -146,7 +148,6 @@ export function reduce(
                 if(cardMeta.timing!="REACTION" && cardMeta.timing!="BOTH"){
                     return appendLog(state,`Wrong Timing (${state.turnCtx.defenderCard} is not allowed at REACTION , only allowed at ${cardMeta.timing})`)
                 }
-                return appendLog(state,`${state.phase} Not Allowed ${action.player} Play Card!`);
             }
             
             if(!state.players[action.player].hand.includes(action.cardId)){
@@ -154,7 +155,7 @@ export function reduce(
             }
 
             if(action.cardId==="SET_ROLL"){
-                if(isIntInRange(action.payload.chosen,0,6)){
+                if(!isIntInRange(action.payload.chosen,0,6)){
                     return appendLog(state, `${action.payload} out of r a n g e`)
                 }
             }
@@ -169,15 +170,53 @@ export function reduce(
             if(!removeStatus.ok){
                 return appendLog(state, `remove ${action.cardId} failed`);
             }
-            const newState:GameState = {
+            let newState:GameState = {
                 ...state,
                 players:{
                     ...state.players,
                     [action.player]:{
                         ...state.players[action.player],hand:removeStatus.next
                     }
-                }
+                },
+                discard:[...state.discard,action.cardId],
             }
+            // 更新 turnCtx：記錄出牌 + 更新 multiplier / flags
+            if (state.phase === "ACTION") {
+                let attackerCard: PlayedCard;
+
+                if (action.cardId === "MULTIPLIER") {
+                    attackerCard = { id: "MULTIPLIER", payload: action.payload }; // payload 必須是 MultiplierPayload
+                } else if (action.cardId === "SET_ROLL") {
+                    attackerCard = { id: "SET_ROLL", payload: action.payload };     // payload 必須是 SetRollPayload
+                } else {
+                    attackerCard = { id: action.cardId as Exclude<CardId, "MULTIPLIER" | "SET_ROLL"> }; // payload = undefined
+                }
+
+                let nextTurn = { ...newState.turnCtx, attackerCard: attackerCard };
+
+                if (action.cardId === "NULLIFY") nextTurn = { ...nextTurn, flags: { ...nextTurn.flags, attackerNullify: true } };
+                if (action.cardId === "MULTIPLIER") nextTurn = { ...nextTurn, multiplier: action.payload.factor };
+
+                newState = { ...newState, turnCtx: nextTurn };
+                return appendLog(newState, `ACTION: ${attacker} played ${action.cardId}`);
+            }
+
+            // REACTION
+            let defenderCard: PlayedCard;
+            if (action.cardId === "MULTIPLIER") {
+                defenderCard = { id: "MULTIPLIER", payload: action.payload }; // payload 必須是 MultiplierPayload
+            }
+            else if (action.cardId === "SET_ROLL") {
+                defenderCard = { id: "SET_ROLL", payload: action.payload };     // payload 必須是 SetRollPayload
+            }
+            else {
+                defenderCard = { id: action.cardId as Exclude<CardId, "MULTIPLIER" | "SET_ROLL"> }; // payload = undefined
+            }
+
+            let nextTurn = { ...newState.turnCtx, defenderCard: defenderCard };
+            if (action.cardId === "NULLIFY") nextTurn = { ...nextTurn, flags: { ...nextTurn.flags, defenderNullify: true } };
+
+            newState = { ...newState, turnCtx: nextTurn };
             return appendLog(newState, "Play Card, Done");
         }
 
@@ -195,7 +234,7 @@ export function reduce(
                     return appendLog(state,`${action.player} is not the defender`);
                 }
                 let newState = { ...state };
-                newState.phase = "ROLL";
+                newState.phase = "RESOLVE";
                 return appendLog(newState, `${action.player} Skip's Card`);  
             }
         }
@@ -205,10 +244,12 @@ export function reduce(
                 return appendLog(state,`${action.player} is not attacker, cannot roll dice`)
             }
 
-            let newValue=0;
-            if(state.turnCtx.attackerCard==="SET_ROLL"&&state.turnCtx.attackerCard.payload){
-                if(isIntInRange(state.turnCtx.attackerCard.payload.chosen,0,6)){
-                    newValue=state.turnCtx.attackerCard.payload.chosen
+            let newValue:number;
+            const aCard = state.turnCtx.attackerCard;
+            if(aCard?.id==="SET_ROLL"&&aCard.payload){
+                const chosen = (aCard.payload as any)?.chosen;
+                if(isIntInRange(chosen,0,6)){
+                    newValue=chosen
                     state=appendLog(state,`SET_ROLL use successfully, dice value is now ${newValue}`)
                 }
                 else{
@@ -304,16 +345,22 @@ export function reduce(
 
             let nextState={...state,players:nextPlayers}
 
-            if(nextState.players.P1.position<=0 && nextState.players.P2.position<=0){
+            const p1Dead = nextState.players.P1.position<=0;
+            const p2Dead = nextState.players.P2.position<=0;
+            if(p1Dead && p2Dead){
                 nextState={...nextState,winner:"DRAWN"}
             }
-            else if(state.players.P1.position<=0){
+            else if(p1Dead){
                 nextState={...nextState,winner:"P2"}   
             }
-            else{
+            else if(p2Dead){
                 nextState={...nextState,winner:"P1"}
             }
-            nextState=appendLog(nextState,`Winners are ${nextState.winner}`)
+
+            if(nextState.winner){
+                nextState=appendLog(nextState,`Game Ended! Winner is ${nextState.winner}`)
+            }
+            
             nextState={...nextState,phase:"DRAW"}
             return nextState;
         }

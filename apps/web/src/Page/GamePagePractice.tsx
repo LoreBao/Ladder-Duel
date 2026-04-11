@@ -245,8 +245,17 @@ export default function GamePage_practice() {
         </section>
 
         <OperatePanel
-          {/*TODO:給予正確參數*/}
 
+          can={can}
+          state={state}
+          attacker={attacker}
+          handAttacker={handAttacker}
+          defender={defender}
+          handDefender={handDefender}
+          canPlayInAction={canPlayInAction}
+          canPlayInReaction={canPlayInReaction}
+          dispatch={dispatch}
+          needDiscard={needDiscard}
         />
       </main>
 
@@ -303,9 +312,9 @@ function CharacterPicker({ open, value, onChange, onClose }: CharacterPickerProp
             // - 判斷目前 color 是否為 P1 已選值
             // - 若是，套用 active className
             // - 按下後呼叫 onChange("P1", color)
-            if(color===P1.color){
-              onchange("P1",color)
-            }
+            return(
+              <button key={`${color}-p1`} className={color===value["P1"]?"Active":""} onClick={()=>onChange("P1",color)}>{color}</button>
+            )
 
             
           })}
@@ -322,11 +331,10 @@ function CharacterPicker({ open, value, onChange, onClose }: CharacterPickerProp
             // - 判斷目前 color 是否為 P2 已選值
             // - 若是，套用 active className
             // - 按下後呼叫 onChange("P2", color)
-            if(color=P2.color){
-              active className
-              onchange("P2",color)
-            }
 
+            return(
+            <button key={`${color}-p2`} className={color===value["P2"]?"Active":""} onClick={()=>onChange("P2",color)}>{color}</button>
+            )
           })}
         </div>
       </div>
@@ -405,11 +413,26 @@ function LogPanel({ log }: LogPanelProps) {
     // 2. 重構版需透過 ref 取得 scroll container。
     // 3. 在 log 改變時，把 scrollTop 設為 scrollHeight。
     // TODO
+    if(logContainerRef.current){
+      logContainerRef.current.scrollTop=logContainerRef.current.scrollHeight;
+    }
+
 
   }, [log]);
 
   return (
-
+    <div ref={logContainerRef}>
+      <h3>Game Log</h3>
+      <div>
+        {log.map((e,index)=>{
+          return(
+            <div key={`${e}-${index}`}>
+              {e}
+            </div>
+          )
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -607,7 +630,7 @@ function CardButtons({ disabled, player, hand, dispatch }: CardButtonsProps) {
                   >
                     {card}
                 </button>
-                {card==="SET_ROLL"&& showSetRollInput&&
+                {(card==="SET_ROLL"&& showSetRollInput)&&
                   <div>
                     <input type="number" 
                   
@@ -617,14 +640,25 @@ function CardButtons({ disabled, player, hand, dispatch }: CardButtonsProps) {
                       value={setRollValue}
 
                       onChange={
-                        ()=>{
-                          
+                        (e)=>{
+                          let eNum=Number(e.target.value); 
+                          setSetRollValue(eNum);
                         }
                       }
-                      ></input>
+                      />
 
-                    <button onClick={
-
+                    <button 
+                    onClick={()=>{
+                      dispatch({
+                        type:"PLAY_CARD",
+                        player:player,
+                        cardId:"SET_ROLL",
+                        payload:{
+                          chosen:clampInt(setRollValue,0,6)
+                        }
+                      })
+                      setShowSetRollInput(false);
+                    }
                     }>Confirm?</button>
                   </div>
                 }
@@ -921,7 +955,7 @@ function OperatePanel({
       <h3>Operate Panel</h3>
       <div>
         <button 
-          disabled={can.ACTION_SKIP} 
+          disabled={!can.ACTION_SKIP} 
           onClick={()=>{
             dispatch({
               type:"SKIP_CARD",
@@ -930,7 +964,7 @@ function OperatePanel({
           }}
         >Action Skip</button>
         <button 
-          disabled={can.ROLL_DICE}
+          disabled={!can.ROLL_DICE}
           onClick={()=>{
             dispatch({
               type:"ROLL_DICE",
@@ -984,12 +1018,30 @@ function OperatePanel({
       </div>
       <h3>Player Card Panel</h3>
       <div>
-          {state.phase==="ACTION"&&}
-          {state.phase==="REACTION"&&}
+          {state.phase==="ACTION"&&
+            <CardButtons disabled={canPlayInAction} player={attacker} hand={handAttacker} dispatch={dispatch}/>
+          }
+          {state.phase==="REACTION"&&
+            <CardButtons disabled={canPlayInReaction} player={defender} hand={handDefender} dispatch={dispatch}/>
+          }
           {(state.phase!="ACTION"&& state.phase!="REACTION")&&
             <div>No Card Played in This Phase!</div>
           }
       </div>
+
+      {needDiscard&&
+        <div>
+          <h3>Discard A Card</h3>
+          <p>You have reached a maximum of 5 cards in your hand, discard one to continue</p>
+          {state.players[state.currentPlayer].hand.map((e,index)=>{
+            return <button key={`${e}-${index}`} onClick={()=>dispatch({
+              type:"DISCARD_CARD",
+              player:state.currentPlayer,
+              cardId:e
+            })}>Discard {e}</button>
+          })}
+        </div>
+      }
 
 
     </section>
@@ -1234,5 +1286,15 @@ function clampInt(x: number, lo: number, hi: number): number {
   // 3. 若 x > hi，回傳 hi。
   // 4. 否則回傳 Math.floor(x)。
   // TODO
+  if(!Number.isFinite(x)){
+    return lo;
+  }
+  if(x<lo){
+    return lo;
+  }
+  if(x>hi){
+    return hi;
+  }
+  return Math.floor(x);
 
 }
