@@ -10,9 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ladder-duel/shared": "file:../../packages/shared",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "@ladder-duel/shared":"file:../../packages/shared"
+    "react-router-dom": "^7.14.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

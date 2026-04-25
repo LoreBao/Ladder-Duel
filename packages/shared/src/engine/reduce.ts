@@ -1,6 +1,6 @@
 import type { EngineDeps } from "./deps";
 import { createDefaultDeps } from "./deps";
-import { createInitalState } from "./init";
+import { createInitialState } from "./init";
 import { appendLog,clampPosition,getOpponent } from "./utils";
 import { CARD_META, PlayerId, TurnContext, type CardId, type GameAction, type GameState , type PlayedCard } from "../types";
 
@@ -121,7 +121,7 @@ export function reduce(
 
     switch(action.type){
         case "RESET":{
-            return createInitalState(deps);
+            return createInitialState(deps);
         }
         case "PLAY_CARD":{
             const cardMeta=CARD_META[action.cardId];

@@ -1,6 +1,16 @@
 import {Link} from "react-router-dom";
 
-function footer(){
+export default function HomePage(){
+    return(
+        <section>
+            <SelfIntro/>
+            <GameEntry/>
+            <Footer/>
+        </section>
+    )
+}
+
+function Footer(){
     return (
         <>
         <div id="footer">
@@ -13,29 +23,33 @@ function footer(){
     )
 }
 
-function selfIntro(){
+function SelfIntro(){
     return(
-        <>
+        <section>
         <div id="si">
             <h3>Hello! I'm Kevin</h3>
             <p>These are my two pretty weird games I made, I love making strange ideas into reality</p>
         </div>
-        </>
+        </section>
     )
 }
 
 function GameEntry(){
     return(
-        <>
-        <div id="ladder">
-            <p>Quick, Intense Two Player Game!</p>
-            <button>Ladder Duel (Newest Release)</button>
-        </div>
+        <section>
+            <div id="ladder">
+                <p>Quick, Intense Two Player Game!</p>
+                <Link to="/play">
+                    Ladder Duel 
+                </Link>
 
-        <div id="clicker">
-            <p>Chaotic Fun and Randomness</p>
-            <button>Jerry Clicker (First Game!)</button>
-        </div>
-        </>
+            </div>
+
+            <div id="clicker">
+                <a href="./Click-Game-Project/index.html">
+                    Jerry Game
+                </a>
+            </div>
+        </section>
     )
 }

@@ -1,7 +1,7 @@
   import { useMemo, useReducer, useState, useRef, useEffect } from "react";
 import { createDefaultDeps, createInitialState, reduce } from "@ladder-duel/shared";
 import type { GameState, GameAction, PlayerId, CardId } from "@ladder-duel/shared";
-import "./GamePagePractice.css";
+import "./GamePractice.css";
 
 /*
   Layout note:
@@ -12,7 +12,7 @@ import "./GamePagePractice.css";
 type PlayerColor = "red" | "blue";
 const COLOR_OPTIONS: PlayerColor[] = ["red", "blue"];
 
-export default function GamePagePractice() {
+export default function GamePage() {
   const deps = useMemo(() => createDefaultDeps(), []);
 
   const [state, dispatch] = useReducer(

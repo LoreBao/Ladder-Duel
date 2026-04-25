@@ -1,19 +1,17 @@
 import {Routes, Route, HashRouter} from "react-router-dom";
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { GamePage } from './Page/GamePagePractice'
+import GamePage  from './Page/GamePractice'
+import HomePage from "./Page/HomePage";
 
 
 function App() {
-  const [count, setCount] = useState(0)
+
 
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={GamePage}/>
-        <Route path="/play" element={GamePage}/>
+        <Route path="/" element={<HomePage/>}/>       
+        <Route path="/play" element={<GamePage/>}/>
       </Routes>
     </HashRouter>
   )
