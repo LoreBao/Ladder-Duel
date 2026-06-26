@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ladder-duel/shared": ["../../packages/shared/src/index.ts"]
+    },
+    "types": ["node"], //讓 TypeScript 可以識別 Node.js 全域物件
+    "noEmit": true //代表只做型別檢查，不實際產出 JS 檔案）
+  },
+  "include": ["src"]
+}
