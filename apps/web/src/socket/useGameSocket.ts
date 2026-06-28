@@ -36,6 +36,13 @@ export function useGameSocket(){
     },[])
 
     const createRoom=useCallback((displayName?:string)=>{
-        setError
-    })
+        setErrorMessage(null);
+        setGameView(null);
+        socket.emit("create_room", {displayName: cleanOptional(displayName)})
+    },[])
+}
+
+function cleanOptional(value:string|undefined): string|undefined{
+    const cleaned=value?.trim();
+    return cleaned?cleaned:undefined;
 }
