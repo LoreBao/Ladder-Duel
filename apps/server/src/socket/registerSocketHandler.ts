@@ -111,6 +111,6 @@ function broadcastRoom(io:GameSocketServer,room:GameRoom):void{
             roomId:room.roomId,
             view:createGameView(room,player.playerId),
             room:roomSummary,
-        })
+        })                                         
     }
 }

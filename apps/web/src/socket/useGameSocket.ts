@@ -69,7 +69,7 @@ export function useGameSocket(){
             socket.off("player_assigned");
             socket.off("game_state_updated");
             socket.off("player_disconnected");
-            socket.off("error_message");
+            socket.off("error_message");        
         };
     },[])
 
