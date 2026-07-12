@@ -4,7 +4,7 @@ import type{
 } from "@ladder-duel/shared";
 
 import { createGameView,createRoomSummary } from "src/rooms/roomView";
-import { RoomManager } from "src/rooms/roomManager";
+import { RoomManager } from "src/rooms/RoomManager";
 import {BroadcastOperator, Server,Socket} from "socket.io";
 import type {GameRoom, RoomError} from "../rooms/roomTypes"
 import { EventEmitterAsyncResource } from "events";
