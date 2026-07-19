@@ -103,12 +103,21 @@ export function RoomLobby({
                             <div>P2:{formatPlayer(room.players.P2)}</div>
                         </div>
                     )}
+
+                    {errorMessage&&<div className="error-banner">{errorMessage}</div>}
                 </section>
             </main>
         </div>
     )
 }
 
+function formatPlayer(player:RoomSummary["players"][PlayerId]):string{
+    if(!player){
+        return "empty";
+    }
+    const name=player.displayName?'${player.displayName}':"";
+    return '${player.connected?"connected":"offline"}${name}'
+}
 
 
 

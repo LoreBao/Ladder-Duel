@@ -16,7 +16,7 @@ import type{GameRoom, RoomError, RoomPlayer} from "./roomTypes"
 import { throws } from "assert";
 import { normalize } from "path";
 import { createRoomSummary } from "./roomView";
-import { getPlayerIdBySocketId } from "./roomValidation";
+import { getPlayerIdBySocketId,canPlayerSendIntent } from "./roomValidation";
 
 type RoomResult={room: GameRoom} | {error:RoomError}
 
@@ -112,6 +112,41 @@ export class RoomManager{
         return {room, playerId};
     }
 
+    dispatchPlayerIntent(
+        socketId:string,
+        roomId:string,
+        intent: PlayerIntent,
+    ): RoomResult{
+       
+       const roomResult=this.findSocketRoom(socketId, roomId);
+       if("error" in roomResult) return roomResult;
+
+       const {room,playerId}=roomResult;
+       const allowed=canPlayerSendIntent(room,playerId,intent);
+
+       if(!allowed.ok) return {error:allowed.error};
+
+       const action=toGameAction(playerId,intent);
+
+       room.gameState=reduce(room.gameState,action, this.deps);
+       room.status=resolveRoomStatus(room);
+       room.updatedAt=Date.now()
+
+       return {room};
+    }
+
+    restartRoom(socketId:string, roomId:string):RoomResult{
+        const roomResult=this.findSocketRoom(socketId,roomId);
+        if("error" in roomResult) return roomResult;
+
+        const {room}= roomResult;
+        room.gameState=reduce(room.gameState,{type:"RESET"}, this.deps);
+        room.status=resolveRoomStatus(room);
+        room.updatedAt=Date.now();
+
+        return {room};
+    }
+
     private createRoomId():string{
         
         let roomId="";
@@ -121,6 +156,39 @@ export class RoomManager{
         } while (this.rooms.has(roomId));
         return roomId;
              
+    }
+
+    private findSocketRoom(
+        socketId:string,
+        roomId:string,
+    ):{room:GameRoom; playerId:PlayerId}|{error:RoomError}{
+        const normalizedRoomId=normalizeRoomId(roomId);
+        const room=this.rooms.get(normalizedRoomId);
+        if(!room){
+            return {error:{code:"ROOM_NOT_FOUND", message: "Room does not exist"}};
+        }
+
+
+        if(this.socketToRoomId.get(socketId)!==normalizedRoomId){
+            return{
+                error:{
+                    code:"SOCKET_NOT_IN_ROOM",
+                    message:"This connection is not a player in that room"
+                },
+            };
+        }
+
+        const playerId=getPlayerIdBySocketId(room,socketId);
+        if(!playerId){
+            return{
+                error:{
+                    code:"PLAYER_NOT_ASSIGNED",
+                    message:"This connection has not been assigned a player"
+                },
+            };
+        }
+
+        return {room, playerId};
     }
 }
 
@@ -146,4 +214,48 @@ function resolveRoomStatus(room:GameRoom):GameRoom["status"]{
     return room.players.P1?.connected&&room.players.P2?.connected
         ?"playing"
         :"waiting"
+}
+
+function toGameAction(playerId:PlayerId,intent: PlayerIntent): GameAction{
+    switch(intent.type){
+        case "PLAY_CARD":
+            if(intent.cardId==="SET_ROLL"){
+                return{
+                    type:"PLAY_CARD",
+                    player:playerId,
+                    cardId:"SET_ROLL",
+                    payload:intent.payload,
+                };
+            }
+            if(intent.cardId==="MULTIPLIER"){
+                return{
+                    type:"PLAY_CARD",
+                    player:playerId,
+                    cardId:"MULTIPLIER",
+                    payload:intent.payload,
+                }
+            }
+            return{
+                type:"PLAY_CARD",
+                player:playerId,
+                cardId: intent.cardId as Exclude<CardId, "SET_ROLL"|"MULTIPLIER">,
+            }
+
+        case "SKIP_CARD":
+            return {type:"SKIP_CARD", player: playerId}
+
+        case "ROLL_DICE":
+            return {type:"ROLL_DICE", player: playerId}
+
+        case "RESOLVE_ROLL":
+            return {type:"RESOLVE_ROLL"}
+
+        case "DRAW_CARD":
+            return {type:"DRAW_CARD"}
+
+        case "DISCARD_CARD":
+            return {type:"DISCARD_CARD", player: playerId, cardId: intent.cardId};
+        case "END_TURN":
+            return {type:"END_TURN", player:playerId};
+    }
 }
