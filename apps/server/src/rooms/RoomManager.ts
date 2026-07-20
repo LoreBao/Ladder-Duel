@@ -52,7 +52,7 @@ export class RoomManager{
             players:{P1:player},
             gameState:createInitialState(this.deps),
             createdAt:now,
-            updatedAt:now,
+            updatedAt:now,  
         }
 
         this.rooms.set(roomId,room);

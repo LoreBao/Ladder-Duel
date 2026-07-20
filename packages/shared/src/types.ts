@@ -75,7 +75,7 @@ export interface GameState{
     }
     log:string[]
     turnCtx:TurnContext;
-    winner?:PlayerId|"DRAWN"
+    winner?:PlayerId|"DRAW"
 }
 
 export type GameAction=

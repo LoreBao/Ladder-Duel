@@ -14,8 +14,9 @@ type GameSocketServer=Server<ClientToServerEvents,ServerToClientEvents>
 type GameSocket= Socket<ClientToServerEvents, ServerToClientEvents>
 
 export function registerSocketHandlers(io: GameSocketServer):void{
+    const rooms=new RoomManager();
      io.on("connection",(socket:GameSocket)=>{
-
+        
         socket.on("create_room",(payload)=>{
             const result=rooms.createRoom(socket.id,payload.displayName);
             if("error" in result){
@@ -89,7 +90,7 @@ export function registerSocketHandlers(io: GameSocketServer):void{
                 roomId:result.room.roomId,
                 playerId:result.playerId
             });
-            broadcastRoom(io.result.room);
+            broadcastRoom(io,result.room);
         })
 
         console.log(socket.id)
