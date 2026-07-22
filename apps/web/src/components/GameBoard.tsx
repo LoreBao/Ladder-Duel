@@ -25,4 +25,6 @@ export function GameBoard({
     errorMessage,
     onPlayerIntent,
     onRestart,
-}: GameBoardProps)
+}: GameBoardProps){
+    
+}

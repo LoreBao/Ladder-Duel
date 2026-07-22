@@ -48,7 +48,7 @@ export class RoomManager{
 
         const room: GameRoom={
             roomId,
-            status:"waiting",
+            status:"waiting",   
             players:{P1:player},
             gameState:createInitialState(this.deps),
             createdAt:now,
