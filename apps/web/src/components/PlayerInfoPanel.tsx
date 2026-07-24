@@ -1,4 +1,4 @@
-import type {CardId, PlayerId} from "@ladder-duel/shared";
+import {CARD_META, type CardId, type PlayerId} from "@ladder-duel/shared";
 
 interface PlayerInfoPanelProps{
     playerId:PlayerId;
@@ -26,6 +26,21 @@ export function PlayerInfoPanel({
                 <span className={connected===false? "status-offline":"status-online"}>
                     {connected===false?"offline":"online"}
                 </span>
+            </div>
+            {displayName&&<div className="display-name">{displayName}</div>}
+            <div>Position:{position}</div>
+            <div>Hand: {handCount} cards</div>
+            <div className="card-panel">
+                {(isSelf&&hand&&hand.length>0) &&(
+                    <ul>
+                        {hand.map((card,index)=>(
+                            <li key={`${playerId}-${card}-${index}`}>{card}</li>
+                        ))}
+                    </ul>
+                )}
+                {(isSelf&&hand?.length===0)&&<div className="hint">(empty)</div>}
+                {!isSelf&&<div className="hidden-hand">{renderHiddenCards(handCount)}</div>}
+
             </div>
         </aside>
     )
