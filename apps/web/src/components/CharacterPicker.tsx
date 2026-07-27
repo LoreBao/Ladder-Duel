@@ -41,7 +41,7 @@ function ColorRow({
                 {COLOR_OPTIONS.map((color)=>(
                     <button
                         key={`${playerId}-${color}`}
-                        className={`picker-color-btn ${value===color?"active":""}`}
+                        className={`picker-color-btn ${value===color?"active":"  "}`}
                     />
                 ))}
             </div>

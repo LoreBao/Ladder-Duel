@@ -107,6 +107,20 @@ export function useGameSocket(){
         }
         socket.emit("request_restart",{roomId:targetRoomId});
     },[gameView?.roomId, roomId]);
+
+    return{
+        connected,
+        socketUrl:SOCKET_URL,
+        roomId,
+        myPlayerId,
+        room,
+        gameView,
+        errorMessage,
+        createRoom,
+        joinRoom,
+        sendPlayerIntent,
+        requestRestart,
+    };
 }
 
 
