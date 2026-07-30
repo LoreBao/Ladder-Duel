@@ -25,9 +25,9 @@ export interface ServerToClientEvents{
         roomId:string
         view: GameView;
         room: RoomSummary;
-    })=>void;
+    })=>void;   
     player_disconnected:(payload:{roomId:string;playerId:PlayerId})=>void;
     error_message:(payload:{code:string; message:string})=>void;
-
+    
 }
 
