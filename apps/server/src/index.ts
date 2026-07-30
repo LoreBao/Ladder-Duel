@@ -10,6 +10,7 @@ import{
 } from "@ladder-duel/shared";
 
 import { CORS_ORIGIN,SERVER_HOST,SERVER_PORT } from "./config/env";
+import { registerSocketHandlers } from "./socket/registerSocketHandler";
 
 
 const app = express();
@@ -25,6 +26,12 @@ const io = new Server<ClientToServerEvents,ServerToClientEvents>(httpServer,{
         origin: CORS_ORIGIN,
     },
 });
+
+registerSocketHandlers(io);
+
+httpServer.listen(SERVER_PORT,SERVER_HOST,()=>{
+    console.log(`Server listening on http://${SERVER_HOST}:${SERVER_PORT}`);
+})  
 
 
 

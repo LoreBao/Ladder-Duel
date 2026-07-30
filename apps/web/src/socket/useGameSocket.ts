@@ -1,5 +1,5 @@
 import { useCallback,useState,useEffect, use } from "react";
-import { socket, SOCKET_URL} from "./socket.io-client";
+import { socket, SOCKET_URL} from "./socketCilent";
 import type{
     GameView,
     PlayerId,

@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/",
-    "packages/"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev:web": "npm --workspace @ladder-duel/web run dev -- --host 0.0.0.0",
     "dev:server": "npm --workspace @ladder-duel/server run dev",
-    "dev": "concurrently "npm run dev:server" "npm run dev:web"",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
     "build": "npm --workspace @ladder-duel/shared run build && npm --workspace @ladder-duel/server run build && npm --workspace @ladder-duel/web run build",
     "preview": "npm --workspace @ladder-duel/web run preview -- --host 0.0.0.0"
   },

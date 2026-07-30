@@ -1,7 +1,6 @@
 import {GameBoard} from "../components/GameBoard";
 import {RoomLobby} from "../components/RoomLobby";
 import { useGameSocket } from "../socket/useGameSocket";
-import "../styles/GamePage.css";
 
 export default function GamePage(){
     const{
@@ -32,4 +31,16 @@ export default function GamePage(){
             />
         )
     }
+
+    return(
+        <GameBoard
+            connected={connected}
+            socketUrl={socketUrl}
+            view={gameView}
+            room={room}
+            errorMessage={errorMessage}
+            onPlayerIntent={sendPlayerIntent}
+            onRestart={requestRestart}
+        />
+    );
 }

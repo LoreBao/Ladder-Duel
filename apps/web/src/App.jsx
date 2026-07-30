@@ -1,6 +1,6 @@
 import {Routes, Route, HashRouter} from "react-router-dom";
 import './App.css'
-import GamePage  from './Page/GamePractice'
+import GamePage  from './Page/GamePage'
 import HomePage from "./Page/HomePage";
 
 

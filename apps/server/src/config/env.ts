@@ -2,7 +2,7 @@ import { partialDeepStrictEqual } from "assert";
 import { off } from "process";
 import { UnderlyingByteSource } from "stream/web";
 
-export const SERVER_PORT=readPort(process.env.PORT, 3000);
+export const SERVER_PORT=readPort(process.env.PORT, 3001);
 
 export const SERVER_HOST= process.env.HOST ?? "0.0.0.0";
 export const CORS_ORIGIN= process.env.CORS_ORIGIN ?? "*";
