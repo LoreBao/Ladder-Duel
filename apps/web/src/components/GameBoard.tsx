@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from "react"
+import {useMemo,useState} from "react"
 import type{
     CardId,
     GameView,
@@ -22,7 +22,6 @@ interface GameBoardProps{
     onRestart(): void;
 }
 
-
 interface PlayerPanelView{
     playerId:PlayerId;
     displayName?:string;
@@ -42,35 +41,12 @@ export function GameBoard({
     onPlayerIntent,
     onRestart,
 }: GameBoardProps){
-    const [backgroundImage,setBackgroundImage]=useState<HTMLImageElement|null>(null);
-    const [imageError,setImageError]=useState<string|null>(null);
     const [colorPickerOpen,setColorPickerOpen]=useState(false);
     const [playerColor,setPlayerColor]=useState<Record<PlayerId,PlayerColor>>({
         P1:"blue",
         P2:"red",
     })
 
-    useEffect(()=>{
-        let cancelled=false;
-        loadImage(`${import.meta.env.BASE_URL}images/background.jpg`)
-            .then((img)=>{
-                if(!cancelled){
-                    setBackgroundImage(img);
-                    setImageError(null);
-                }
-            })
-            .catch((error:Error)=>{
-                if(!cancelled){
-                    setBackgroundImage(null);
-                    setImageError(error.message);
-                }
-            });
-
-            return()=>{
-                cancelled=true;
-            }
-    },[]);
-    
     const p1=createPlayerPanelView(view,room,"P1")
     const p2=createPlayerPanelView(view,room,"P2")
 
@@ -84,7 +60,7 @@ export function GameBoard({
         !hasWinner&&view.phase==="ACTION"&&isAttacker&&!view.attackerCard;
     const canPlayReactionCard=
         !hasWinner&&view.phase==="REACTION" && isDefender && !view.defenderCard;
-    
+
     const can=useMemo(
         ()=>({
             actionSkip:!hasWinner&&view.phase==="ACTION"&&isAttacker,
@@ -108,98 +84,99 @@ export function GameBoard({
 
     const actionHand=canPlayActionCard?view.me.hand:[];
     const reactionHand=canPlayReactionCard?view.me.hand:[];
-    const winnerText=view.winner?`Winner: ${view.winner}`: "Winner:none";
+    const winnerText=view.winner?`Winner: ${view.winner}`: "Winner: none";
 
     return(
         <div className="game-page">
-            <div className="character-picker-anchor">
-                <button
-                    className="picker-toggle"
-                    onClick={()=>setColorPickerOpen((prev)=>!prev)}
-                >
-                    Character
-                </button>
+            <div className="game-layout">
+                <main className="game-main-column">
+                    <section className="panel connection-panel" aria-label="Room summary">
+                        <div className="summary-primary">
+                            Room <b>{view.roomId}</b> ¡P You are <b>{view.myPlayerId}</b>
+                        </div>
+                        <div className="summary-secondary">
+                            <span
+                                className="connection-state"
+                                data-connected={connected}
+                            >
+                                {connected?"Connected":"Disconnected"}
+                            </span>
+                            <span aria-hidden="true">¡P</span>
+                            <span className="socket-url">{socketUrl}</span>
+                        </div>
+                    </section>
 
-                <CharacterPicker
-                    open={colorPickerOpen}
-                    value={playerColor}
-                    onChange={(player,color)=>
-                        setPlayerColor((prev)=>({...prev,[player]: color}))
-                    }
-                    onClose={()=>setColorPickerOpen(false)}                
-                />
+                    {errorMessage&&<div className="error-banner board-error">{errorMessage}</div>}
 
-            </div>
+                    <section className="panel info-panel" aria-label="Game information">
+                        <h3>Game Info</h3>
+                        <div className="info-row">
+                            <div>{winnerText}</div>
+                            <div>Turn {view.turn}</div>
+                            <div>Phase {view.phase}</div>
+                            <div>Attacker {view.attacker}</div>
+                            <div>Defender {view.defender}</div>
+                            <div>Roll: {view.roll??"-"}</div>
+                            <div>Attack Card: {view.attackerCard?.id??"-"}</div>
+                            <div>Defense Card: {view.defenderCard?.id??"-"}</div>
+                        </div>
+                    </section>
 
-            <main className="game-main-column">
-                <section className="panel connection-panel">
-                    <div>
-                        Room <b>{view.roomId}</b> You are <b>{view.myPlayerId}</b>
-                    </div>
-                    <div>
-                        Socket<b>{connected?"connected":"disconnected"}</b> {""}
-                        <span>{socketUrl}</span>
-                    </div>
-                </section>
+                    <section className="arena-row" aria-label="Ladder duel arena">
+                        <PlayerInfoPanel {...p1}/>
 
-                {errorMessage&&<div className="error-banner board-error">{errorMessage}</div>}
+                        <div className="gallery-shell">
+                            <Gallery
+                                p1Color={playerColor.P1}
+                                p2Color={playerColor.P2}
+                                p1Level={p1.position}
+                                p2Level={p2.position}
+                            />
+                        </div>
 
-                <section className="panel info-panel">
-                    <h3>Game Info</h3>
-                    <div className="info-row">
-                        <div>{winnerText}</div>
-                        <div>Turn {view.turn}</div>
-                        <div>Phase {view.phase}</div>
-                        <div>Attacker {view.attacker}</div>
-                        <div>Defender {view.defender}</div>
-                        <div>Roll:{view.roll??"-"}</div>
-                        <div>Attack Card:{view.attackerCard?.id??"-"}</div>
-                        <div>Defense Card:{view.defenderCard?.id??"-"}</div>
-                    </div>
-                </section>
+                        <PlayerInfoPanel {...p2}/>
+                    </section>
 
-                <section className="arena-row">
-                    <PlayerInfoPanel {...p1}/>
+                    <OperatePanel
+                        view={view}
+                        can={can}
+                        actionHand={actionHand}
+                        reactionHand={reactionHand}
+                        needDiscard={needDiscard}
+                        canPlayActionCard={canPlayActionCard}
+                        canPlayReactionCard={canPlayReactionCard}
+                        onPlayerIntent={onPlayerIntent}
+                        onRestart={onRestart}
+                    />
+                </main>
 
-                    <div className="gallery-shell">
-                        <Gallery
-                            p1Color={playerColor.P1}
-                            p2Color={playerColor.P2}
-                            p1Level={p1.position}
-                            p2Level={p2.position}
-                            backgroundImage={backgroundImage}                       
+                <aside className="game-side-column" aria-label="Game tools">
+                    <LogPanel log={view.log}/>
+
+                    <div className="character-picker-anchor">
+                        <button
+                            className="picker-toggle"
+                            type="button"
+                            aria-expanded={colorPickerOpen}
+                            aria-controls="character-picker"
+                            onClick={()=>setColorPickerOpen((prev)=>!prev)}
+                        >
+                            Character Picker
+                        </button>
+
+                        <CharacterPicker
+                            open={colorPickerOpen}
+                            value={playerColor}
+                            onChange={(player,color)=>
+                                setPlayerColor((prev)=>({...prev,[player]: color}))
+                            }
+                            onClose={()=>setColorPickerOpen(false)}
                         />
-                        {imageError&&<div className="hint image-error">{imageError}</div>}
                     </div>
-
-                    <PlayerInfoPanel {...p2}/>
-                </section>
-
-                <OperatePanel
-                    view={view}
-                    can={can}
-                    actionHand={actionHand}
-                    reactionHand={reactionHand}
-                    needDiscard={needDiscard}
-                    canPlayActionCard={canPlayActionCard}
-                    canPlayReactionCard={canPlayReactionCard}
-                    onPlayerIntent={onPlayerIntent}
-                    onRestart={onRestart}
-                />
-            </main>
-
-            <LogPanel log={view.log}/>
+                </aside>
+            </div>
         </div>
     );
-}
-
-function loadImage(src:string): Promise<HTMLImageElement>{
-    return new Promise((resolve,reject)=>{
-        const img= new Image();
-        img.onload=()=>resolve(img);
-        img.onerror=()=>reject(new Error(`Fail to load image:${src}`))
-        img.src=src;
-    })
 }
 
 function createPlayerPanelView(

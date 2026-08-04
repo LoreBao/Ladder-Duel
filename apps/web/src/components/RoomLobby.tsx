@@ -57,7 +57,9 @@ export function RoomLobby({
                         className="primary-btn"
                         disabled={!connected}
                         onClick={()=>onCreateRoom(displayName)} 
-                        ></button>
+                        >
+                        Create Room
+                        </button>
                     </div>
 
                     {roomId&&(
