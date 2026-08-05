@@ -151,7 +151,7 @@ function GameEntry(){
 
                 <a
                     className="project-card project-card-jerry"
-                    href="./Click-Game-Project/index.html"
+                    href={`${import.meta.env.BASE_URL}Click-Game-Project/index.html`}
                     aria-label="Play Jerry Game"
                 >
                     <div className="project-card-topline">
