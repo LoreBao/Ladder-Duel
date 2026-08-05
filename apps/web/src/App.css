@@ -17,6 +17,7 @@
 }
 
 #root {
+  width: 100%;
   min-height: 100vh;
 }
 
@@ -749,7 +750,9 @@ p {
   --home-text: #f4f3f6;
   --home-muted: #aaa8b2;
   position: relative;
+  width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   background:
     radial-gradient(circle at 82% 10%, rgba(168, 113, 241, 0.17), transparent 27rem),
